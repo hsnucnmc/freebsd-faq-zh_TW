@@ -1,0 +1,122 @@
+Chapter 18. Advanced Topics
+18.1. How can I learn more about FreeBSD's internals?
+18.2. How can I contribute to FreeBSD? What can I do to help?
+18.3. What are snapshots and releases?
+18.4. How can I make the most of the data I see when my kernel panics?
+18.5. Why has dlsym() stopped working for ELF executables?
+18.6. How can I increase or reduce the kernel address space on i386?
+18.1.
+
+How can I learn more about FreeBSD's internals?
+
+See the FreeBSD Architecture Handbook.
+
+Additionally, much general UNIX® knowledge is directly applicable to FreeBSD.
+
+18.2.
+
+How can I contribute to FreeBSD? What can I do to help?
+
+We accept all types of contributions: documentation, code, and even art. See the article on Contributing to FreeBSD for specific advice on how to do this.
+
+And thanks for the thought!
+
+18.3.
+
+What are snapshots and releases?
+
+There are currently 2 active/semi-active branches in the FreeBSD Subversion Repository. (Earlier branches are only changed very rarely, which is why there are only 2 active branches of development):
+
+stable/11/ AKA 11-STABLE
+
+stable/12/ AKA 12-STABLE
+
+head/ AKA -CURRENT AKA 12-CURRENT
+
+HEAD is not an actual branch tag. It is a symbolic constant for the current, non-branched development stream known as -CURRENT.
+
+Right now, -CURRENT is the 13.X development stream; the 12-STABLE branch, stable/12/, forked off from -CURRENT in December 2018 and the 11-STABLE branch, stable/11/, forked off from -CURRENT in October 2016.
+
+18.4.
+
+How can I make the most of the data I see when my kernel panics?
+
+Here is typical kernel panic:
+
+Fatal trap 12: page fault while in kernel mode
+fault virtual address   = 0x40
+fault code              = supervisor read, page not present
+instruction pointer     = 0x8:0xf014a7e5
+stack pointer           = 0x10:0xf4ed6f24
+frame pointer           = 0x10:0xf4ed6f28
+code segment            = base 0x0, limit 0xfffff, type 0x1b
+                        = DPL 0, pres 1, def32 1, gran 1
+processor eflags        = interrupt enabled, resume, IOPL = 0
+current process         = 80 (mount)
+interrupt mask          =
+trap number             = 12
+panic: page fault
+This message is not enough. While the instruction pointer value is important, it is also configuration dependent as it varies depending on the kernel image. If it is a GENERIC kernel image from one of the snapshots, it is possible for somebody else to track down the offending function, but for a custom kernel, only you can tell us where the fault occurred.
+
+To proceed:
+
+Write down the instruction pointer value. Note that the 0x8: part at the beginning is not significant in this case: it is the 0xf0xxxxxx part that we want.
+
+When the system reboots, do the following:
+
+% nm -n kernel.that.caused.the.panic | grep f0xxxxxx
+where f0xxxxxx is the instruction pointer value. The odds are you will not get an exact match since the symbols in the kernel symbol table are for the entry points of functions and the instruction pointer address will be somewhere inside a function, not at the start. If you do not get an exact match, omit the last digit from the instruction pointer value and try again:
+
+% nm -n kernel.that.caused.the.panic | grep f0xxxxx
+If that does not yield any results, chop off another digit. Repeat until there is some sort of output. The result will be a possible list of functions which caused the panic. This is a less than exact mechanism for tracking down the point of failure, but it is better than nothing.
+
+However, the best way to track down the cause of a panic is by capturing a crash dump, then using kgdb(1) to generate a stack trace on the crash dump.
+
+In any case, the method is this:
+
+Make sure that the following line is included in the kernel configuration file:
+
+makeoptions     DEBUG=-g          # Build kernel with gdb(1) debug symbols
+Change to the /usr/src directory:
+
+# cd /usr/src
+Compile the kernel:
+
+# make buildkernel KERNCONF=MYKERNEL
+Wait for make(1) to finish compiling.
+
+# make installkernel KERNCONF=MYKERNEL
+Reboot.
+
+Note: If KERNCONF is not included, the GENERIC kernel will instead be built and installed.
+The make(1) process will have built two kernels. /usr/obj/usr/src/sys/MYKERNEL/kernel and /usr/obj/usr/src/sys/MYKERNEL/kernel.debug. kernel was installed as /boot/kernel/kernel, while kernel.debug can be used as the source of debugging symbols for kgdb(1).
+
+To capture a crash dump, edit /etc/rc.conf and set dumpdev to point to either the swap partition or AUTO. This will cause the rc(8) scripts to use the dumpon(8) command to enable crash dumps. This command can also be run manually. After a panic, the crash dump can be recovered using savecore(8); if dumpdev is set in /etc/rc.conf, the rc(8) scripts will run savecore(8) automatically and put the crash dump in /var/crash.
+
+Note: FreeBSD crash dumps are usually the same size as physical RAM. Therefore, make sure there is enough space in /var/crash to hold the dump. Alternatively, run savecore(8) manually and have it recover the crash dump to another directory with more room. It is possible to limit the size of the crash dump by using options MAXMEM=N where N is the size of kernel's memory usage in KBs. For example, for 1 GB of RAM, limit the kernel's memory usage to 128 MB, so that the crash dump size will be 128 MB instead of 1 GB.
+Once the crash dump has been recovered , get a stack trace as follows:
+
+% kgdb /usr/obj/usr/src/sys/MYKERNEL/kernel.debug /var/crash/vmcore.0
+(kgdb) backtrace
+Note that there may be several screens worth of information. Ideally, use script(1) to capture all of them. Using the unstripped kernel image with all the debug symbols should show the exact line of kernel source code where the panic occurred. The stack trace is usually read from the bottom up to trace the exact sequence of events that lead to the crash. kgdb(1) can also be used to print out the contents of various variables or structures to examine the system state at the time of the crash.
+
+Tip: If a second computer is available, kgdb(1) can be configured to do remote debugging, including setting breakpoints and single-stepping through the kernel code.
+Note: If DDB is enabled and the kernel drops into the debugger, a panic and a crash dump can be forced by typing panic at the ddb prompt. It may stop in the debugger again during the panic phase. If it does, type continue and it will finish the crash dump.
+18.5.
+
+Why has dlsym() stopped working for ELF executables?
+
+The ELF toolchain does not, by default, make the symbols defined in an executable visible to the dynamic linker. Consequently dlsym() searches on handles obtained from calls to dlopen(NULL, flags) will fail to find such symbols.
+
+To search, using dlsym(), for symbols present in the main executable of a process, link the executable using the --export-dynamic option to the ELF linker (ld(1)).
+
+18.6.
+
+How can I increase or reduce the kernel address space on i386?
+
+By default, the kernel address space is 1 GB (2 GB for PAE) for i386. When running a network-intensive server or using ZFS, this will probably not be enough.
+
+Add the following line to the kernel configuration file to increase available space and rebuild the kernel:
+
+options KVA_PAGES=N
+To find the correct value of N, divide the desired address space size (in megabytes) by four. (For example, it is 512 for 2 GB.)
