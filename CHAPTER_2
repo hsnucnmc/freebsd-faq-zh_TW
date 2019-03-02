@@ -1,0 +1,117 @@
+Chapter 2. Documentation and Support
+2.1. What good books are there about FreeBSD?
+2.2. Is the documentation available in other formats, such as plain text (ASCII), or PostScript®?
+2.3. Where do I find info on the FreeBSD mailing lists? What FreeBSD news groups are available?
+2.4. Are there FreeBSD IRC (Internet Relay Chat) channels?
+2.5. Are there any web based forums to discuss FreeBSD?
+2.6. Where can I get commercial FreeBSD training and support?
+2.1.
+
+What good books are there about FreeBSD?
+
+The project produces a wide range of documentation, available online from this link: https://www.FreeBSD.org/docs.html. In addition, the the bibliography in the Handbook reference other recommended books.
+
+2.2.
+
+Is the documentation available in other formats, such as plain text (ASCII), or PostScript®?
+
+Yes. The documentation is available in a number of different formats and compression schemes on the FreeBSD FTP site, in the /pub/FreeBSD/doc/ directory.
+
+The documentation is categorized in a number of different ways. These include:
+
+The document's name, such as faq, or handbook.
+
+The document's language and encoding. These are based on the locale names found under /usr/share/locale on a FreeBSD system. The current languages and encodings are as follows:
+
+Name	Meaning
+en_US.ISO8859-1	English (United States)
+bn_BD.ISO10646-1	Bengali or Bangla (Bangladesh)
+da_DK.ISO8859-1	Danish (Denmark)
+de_DE.ISO8859-1	German (Germany)
+el_GR.ISO8859-7	Greek (Greece)
+es_ES.ISO8859-1	Spanish (Spain)
+fr_FR.ISO8859-1	French (France)
+hu_HU.ISO8859-2	Hungarian (Hungary)
+it_IT.ISO8859-15	Italian (Italy)
+ja_JP.eucJP	Japanese (Japan, EUC encoding)
+ko_KR.UTF-8	Korean (Korea, UTF-8 encoding)
+mn_MN.UTF-8	Mongolian (Mongolia, UTF-8 encoding)
+nl_NL.ISO8859-1	Dutch (Netherlands)
+pl_PL.ISO8859-2	Polish (Poland)
+pt_BR.ISO8859-1	Portuguese (Brazil)
+ru_RU.KOI8-R	Russian (Russia, KOI8-R encoding)
+tr_TR.ISO8859-9	Turkish (Turkey)
+zh_CN.UTF-8	Simplified Chinese (China, UTF-8 encoding)
+zh_TW.UTF-8	Traditional Chinese (Taiwan, UTF-8 encoding)
+Note: Some documents may not be available in all languages.
+The document's format. We produce the documentation in a number of different output formats. Each format has its own advantages and disadvantages. Some formats are better suited for online reading, while others are meant to be aesthetically pleasing when printed on paper. Having the documentation available in any of these formats ensures that our readers will be able to read the parts they are interested in, either on their monitor, or on paper after printing the documents. The currently available formats are:
+
+Format	Meaning
+html-split	A collection of small, linked, HTML files.
+html	One large HTML file containing the entire document
+pdf	Adobe's Portable Document Format
+ps	PostScript®
+rtf	Microsoft®'s Rich Text Format
+txt	Plain text
+Note: Page numbers are not automatically updated when loading Rich Text Format into Word. Press Ctrl+A, Ctrl+End, F9 after loading the document, to update the page numbers.
+The compression and packaging scheme.
+
+Where the format is html-split, the files are bundled up using tar(1). The resulting .tar is then compressed using the compression schemes detailed in the next point.
+
+All the other formats generate one file. For example, article.pdf, book.html, and so on.
+
+These files are then compressed using either the zip or bz2 compression schemes. tar(1) can be used to uncompress these files.
+
+So the PostScript® version of the Handbook, compressed using bzip2 will be stored in a file called book.ps.bz2 in the handbook/ directory.
+
+After choosing the format and compression mechanism, download the compressed files, uncompress them, and then copy the appropriate documents into place.
+
+For example, the split HTML version of the FAQ, compressed using bzip2(1), can be found in doc/en_US.ISO8859-1/books/faq/book.html-split.tar.bz2 To download and uncompress that file, type:
+
+# fetch https://download.freebsd.org/ftp/doc/en_US.ISO8859-1/books/faq/book.html-split.tar.bz2
+# tar xvf book.html-split.tar.bz2
+If the file is compressed, tar will automatically detect the appropriate format and decompress it correctly, resulting in a collection of .html files. The main one is called index.html, which will contain the table of contents, introductory material, and links to the other parts of the document.
+
+2.3.
+
+Where do I find info on the FreeBSD mailing lists? What FreeBSD news groups are available?
+
+Refer to the Handbook entry on mailing-lists and the Handbook entry on newsgroups.
+
+2.4.
+
+Are there FreeBSD IRC (Internet Relay Chat) channels?
+
+Yes, most major IRC networks host a FreeBSD chat channel:
+
+Channel #FreeBSDhelp on EFNet is a channel dedicated to helping FreeBSD users.
+
+Channel #FreeBSD on Freenode is a general help channel with many users at any time. The conversations have been known to run off-topic for a while, but priority is given to users with FreeBSD questions. Other users can help with the basics, referring to the Handbook whenever possible and providing links for learning more about a particular topic. This is primarily an English speaking channel, though it does have users from all over the world. Non-native English speakers should try to ask the question in English first and then relocate to ##freebsd-lang as appropriate.
+
+Channel #FreeBSD on DALNET is available at irc.dal.net in the US and irc.eu.dal.net in Europe.
+
+Channel #FreeBSD on UNDERNET is available at us.undernet.org in the US and eu.undernet.org in Europe. Since it is a help channel, be prepared to read the documents you are referred to.
+
+Channel #FreeBSD on RUSNET is a Russian language channel dedicated to helping FreeBSD users. This is also good place for non-technical discussions.
+
+Channel #bsdchat on Freenode is a Traditional Chinese (UTF-8 encoding) language channel dedicated to helping FreeBSD users. This is also good place for non-technical discussions.
+
+The FreeBSD wiki has a good list of IRC channels.
+
+Each of these channels are distinct and are not connected to each other. Since their chat styles differ, try each to find one suited to your chat style.
+
+2.5.
+
+Are there any web based forums to discuss FreeBSD?
+
+The official FreeBSD forums are located at https://forums.FreeBSD.org/.
+
+2.6.
+
+Where can I get commercial FreeBSD training and support?
+
+iXsystems, Inc., parent company of the FreeBSD Mall, provides commercial FreeBSD and TrueOS software support, in addition to FreeBSD development and tuning solutions.
+
+BSD Certification Group, Inc. provides system administration certifications for DragonFly BSD, FreeBSD, NetBSD, and OpenBSD. Refer to their site for more information.
+
+Any other organizations providing training and support should contact the Project to be listed here.
