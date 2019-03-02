@@ -1,0 +1,30 @@
+4.2. Architectures and Processors
+4.2.1. Does FreeBSD support architectures other than the x86?
+4.2.2. Does FreeBSD support Symmetric Multiprocessing (SMP)?
+4.2.3. What is microcode? How do I install Intel® CPU microcode updates?
+4.2.1.
+
+Does FreeBSD support architectures other than the x86?
+
+Yes. FreeBSD divides support into multiple tiers. Tier 1 architectures, such as i386 or amd64; are fully supported. Tiers 2 and 3 are supported on a best-effort basis. A full explanation of the tier system is available in the Committer's Guide.
+
+A complete list of supported architectures can be found on the platforms page.
+
+4.2.2.
+
+Does FreeBSD support Symmetric Multiprocessing (SMP)?
+
+FreeBSD supports symmetric multi-processor (SMP) on all non-embedded platforms (e.g, i386, amd64, etc.). SMP is also supported in arm and MIPS kernels, although some CPUs may not support this. FreeBSD's SMP implementation uses fine-grained locking, and performance scales nearly linearly with number of CPUs.
+
+smp(4) has more details.
+
+4.2.3.
+
+What is microcode? How do I install Intel® CPU microcode updates?
+
+Microcode is a method of programmatically implementing hardware level instructions. This allows for CPU bugs to be fixed without replacing the on board chip.
+
+Install sysutils/devcpu-data, then add:
+
+microcode_update_enable="YES"
+to /etc/rc.conf
