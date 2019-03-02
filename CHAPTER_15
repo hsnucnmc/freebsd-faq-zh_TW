@@ -1,0 +1,105 @@
+Chapter 15. Serial Communications
+This section answers common questions about serial communications with FreeBSD. PPP is covered in the Networking section.
+
+15.1. Which multi-port serial cards are supported by FreeBSD?
+15.2. How do I get the boot: prompt to show on the serial console?
+15.3. How do I tell if FreeBSD found my serial ports or modem cards?
+15.4. How do I access the serial ports on FreeBSD?
+15.5. How do I enable support for a multi-port serial card?
+15.6. Can I set the default serial parameters for a port?
+15.7. How can I enable dialup logins on my modem?
+15.8. How can I connect a dumb terminal to my FreeBSD box?
+15.9. Why can I not run tip or cu?
+15.1.
+
+Which multi-port serial cards are supported by FreeBSD?
+
+There is a list of these in the Serial Communications chapter of the Handbook.
+
+Most multi-port PCI cards that are based on 16550 or clones are supported with no extra effort.
+
+Some unnamed clone cards have also been known to work, especially those that claim to be AST compatible.
+
+Check uart(4) and sio(4) to get more information on configuring such cards.
+
+15.2.
+
+How do I get the boot: prompt to show on the serial console?
+
+See this section of the Handbook.
+
+15.3.
+
+How do I tell if FreeBSD found my serial ports or modem cards?
+
+As the FreeBSD kernel boots, it will probe for the serial ports for which the kernel is configured. Either watch the boot messages closely or run this command after the system is up and running:
+
+% grep -E '^(sio|uart)[0-9]' < /var/run/dmesg.boot
+sio0: <16550A-compatible COM port> port 0x3f8-0x3ff irq 4 flags 0x10 on acpi0
+sio0: type 16550A
+sio1: <16550A-compatible COM port> port 0x2f8-0x2ff irq 3 on acpi0
+sio1: type 16550A
+This example shows two serial ports. The first is on IRQ4, port address 0x3f8, and has a 16550A-type UART chip. The second uses the same kind of chip but is on IRQ3 and is at port address 0x2f8. Internal modem cards are treated just like serial ports, except that they always have a modem attached to the port.
+
+The GENERIC kernel includes support for two serial ports using the same IRQ and port address settings in the above example. If these settings are not right for the system, or if there are more modem cards or serial ports than the kernel is configured for, reconfigure using the instructions in building a kernel for more details.
+
+15.4.
+
+How do I access the serial ports on FreeBSD?
+
+The third serial port, sio2, or COM3, is on /dev/cuad2 for dial-out devices, and on /dev/ttyd2 for dial-in devices. What is the difference between these two classes of devices?
+
+When opening /dev/ttydX in blocking mode, a process will wait for the corresponding cuadX device to become inactive, and then wait for the carrier detect line to go active. When the cuadX device is opened, it makes sure the serial port is not already in use by the ttydX device. If the port is available, it steals it from the ttydX device. Also, the cuadX device does not care about carrier detect. With this scheme and an auto-answer modem, remote users can log in and local users can still dial out with the same modem and the system will take care of all the conflicts.
+
+15.5.
+
+How do I enable support for a multi-port serial card?
+
+The section on kernel configuration provides information about configuring the kernel. For a multi-port serial card, place an sio(4) line for each serial port on the card in the device.hints(5) file. But place the IRQ specifiers on only one of the entries. All of the ports on the card should share one IRQ. For consistency, use the last serial port to specify the IRQ. Also, specify the following option in the kernel configuration file:
+
+options COM_MULTIPORT
+The following /boot/device.hints example is for an AST 4-port serial card on IRQ 12:
+
+hint.sio.4.at="isa"
+hint.sio.4.port="0x2a0"
+hint.sio.4.flags="0x701"
+hint.sio.5.at="isa"
+hint.sio.5.port="0x2a8"
+hint.sio.5.flags="0x701"
+hint.sio.6.at="isa"
+hint.sio.6.port="0x2b0"
+hint.sio.6.flags="0x701"
+hint.sio.7.at="isa"
+hint.sio.7.port="0x2b8"
+hint.sio.7.flags="0x701"
+hint.sio.7.irq="12"
+The flags indicate that the master port has minor number 7 (0x700), and all the ports share an IRQ (0x001).
+
+15.6.
+
+Can I set the default serial parameters for a port?
+
+See the Serial Communications section in the FreeBSD Handbook.
+
+15.7.
+
+How can I enable dialup logins on my modem?
+
+Refer to the section about Dial-in Services in the FreeBSD Handbook.
+
+15.8.
+
+How can I connect a dumb terminal to my FreeBSD box?
+
+This information is in the Terminals section of the FreeBSD Handbook.
+
+15.9.
+
+Why can I not run tip or cu?
+
+The built-in tip(1) and cu(1) utilities can only access the /var/spool/lock directory via user uucp and group dialer. Use the dialer group to control who has access to the modem or remote systems by adding user accounts to dialer.
+
+Alternatively, everyone can be configured to run tip(1) and cu(1) by typing:
+
+# chmod 4511 /usr/bin/cu
+# chmod 4511 /usr/bin/tip
