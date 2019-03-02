@@ -2,6 +2,10 @@
 
 把 FreeBSD FAQ 從英文翻成中文！
 
+# 進度(已完成)
+
+Abstract, CHAPTER_19
+
 ## 英文原文
 https://www.freebsd.org/doc/en_US.ISO8859-1/books/faq/index.html
 
