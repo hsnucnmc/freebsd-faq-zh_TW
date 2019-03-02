@@ -1,0 +1,41 @@
+4.3. Hard Drives, Tape Drives, and CD and DVD Drives
+4.3.1. What kind of hard drives does FreeBSD support?
+4.3.2. Which SCSI or SAS controllers are supported?
+4.3.3. What types of tape drives are supported?
+4.3.4. Does FreeBSD support tape changers?
+4.3.5. Which CD-ROM and CD-RW drives are supported by FreeBSD?
+4.3.1.
+
+What kind of hard drives does FreeBSD support?
+
+FreeBSD supports EIDE, SATA, SCSI, and SAS drives (with a compatible controller; see the next section), and all drives using the original “Western Digital” interface (MFM, RLL, ESDI, and of course IDE). A few ESDI controllers that use proprietary interfaces may not work: stick to WD1002/3/6/7 interfaces and clones.
+
+4.3.2.
+
+Which SCSI or SAS controllers are supported?
+
+See the complete list in the Hardware Notes for FreeBSD 12.0 or 10.4.
+
+4.3.3.
+
+What types of tape drives are supported?
+
+FreeBSD supports all standard SCSI tape interfaces.
+
+4.3.4.
+
+Does FreeBSD support tape changers?
+
+FreeBSD supports SCSI changers using the ch(4) device and the chio(1) command. The details of how to control the changer can be found in chio(1).
+
+While AMANDA and some other products already understands changers, other applications only know how to move a tape from one point to another. In this case, keep track of which slot a tape is in and which slot the tape currently in the drive needs to go back to.
+
+4.3.5.
+
+Which CD-ROM and CD-RW drives are supported by FreeBSD?
+
+Any SCSI drive connected to a supported controller is supported. Most ATAPI compatible IDE CD-ROMs are supported.
+
+FreeBSD supports any ATAPI-compatible IDE CD-R or CD-RW drive.
+
+FreeBSD also supports any SCSI CD-R or CD-RW drives. Install the sysutils/cdrtools port or package, then use cdrecord.
