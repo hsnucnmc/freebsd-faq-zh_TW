@@ -1,0 +1,64 @@
+Chapter 9. ZFS
+9.1. What is the minimum amount of RAM one should have to run ZFS?
+9.2. What is the ZIL and when does it get used?
+9.3. Do I need a SSD for ZIL?
+9.4. What is the L2ARC?
+9.5. Is enabling deduplication advisable?
+9.6. I cannot delete or create files on my ZFS pool. How can I fix this?
+9.7. Does ZFS support TRIM for Solid State Drives?
+9.1.
+
+What is the minimum amount of RAM one should have to run ZFS?
+
+A minimum of 4GB of RAM is required for comfortable usage, but individual workloads can vary widely.
+
+9.2.
+
+What is the ZIL and when does it get used?
+
+The ZIL (ZFS intent log) is a write log used to implement posix write commitment semantics across crashes. Normally writes are bundled up into transaction groups and written to disk when filled (“Transaction Group Commit”). However syscalls like fsync(2) require a commitment that the data is written to stable storage before returning. The ZIL is needed for writes that have been acknowledged as written but which are not yet on disk as part of a transaction. The transaction groups are timestamped. In the event of a crash the last valid timestamp is found and missing data is merged in from the ZIL.
+
+9.3.
+
+Do I need a SSD for ZIL?
+
+By default, ZFS stores the ZIL in the pool with all the data. If an application has a heavy write load, storing the ZIL in a separate device that has very fast synchronous, sequential write performance can improve overall system. For other workloads, a SSD is unlikely to make much of an improvement.
+
+9.4.
+
+What is the L2ARC?
+
+The L2ARC is a read cache stored on a fast device such as an SSD. This cache is not persistent across reboots. Note that RAM is used as the first layer of cache and the L2ARC is only needed if there is insufficient RAM.
+
+L2ARC needs space in the ARC to index it. So, perversely, a working set that fits perfectly in the ARC will not fit perfectly any more if a L2ARC is used because part of the ARC is holding the L2ARC index, pushing part of the working set into the L2ARC which is slower than RAM.
+
+9.5.
+
+Is enabling deduplication advisable?
+
+Generally speaking, no.
+
+Deduplication takes up a significant amount of RAM and may slow down read and write disk access times. Unless one is storing data that is very heavily duplicated, such as virtual machine images or user backups, it is possible that deduplication will do more harm than good. Another consideration is the inability to revert deduplication status. If data is written when deduplication is enabled, disabling dedup will not cause those blocks which were deduplicated to be replicated until they are next modified.
+
+Deduplication can also lead to some unexpected situations. In particular, deleting files may become much slower.
+
+9.6.
+
+I cannot delete or create files on my ZFS pool. How can I fix this?
+
+This could happen because the pool is 100% full. ZFS requires space on the disk to write transaction metadata. To restore the pool to a usable state, truncate the file to delete:
+
+% truncate -s 0 unimportant-file
+File truncation works because a new transaction is not started, new spare blocks are created instead.
+
+Note: On systems with additional ZFS dataset tuning, such as deduplication, the space may not be immediately available
+9.7.
+
+Does ZFS support TRIM for Solid State Drives?
+
+ZFS TRIM support was added to FreeBSD 10-CURRENT with revision r240868. ZFS TRIM support was added to all FreeBSD-STABLE branches in r252162 and r251419, respectively.
+
+ZFS TRIM is enabled by default, and can be turned off by adding this line to /etc/sysctl.conf:
+
+vfs.zfs.trim.enabled=0
+Note: ZFS TRIM may not work with all configurations, such as a ZFS filesystem on a GELI-backed device.
