@@ -1,0 +1,15 @@
+4.5. Other Hardware
+4.5.1. Workarounds for no sound from my pcm(4) sound card?
+4.5.2. Does FreeBSD support power management on my laptop?
+4.5.1.
+
+Workarounds for no sound from my pcm(4) sound card?
+
+Some sound cards set their output volume to 0 at every boot. Run the following command every time the machine boots:
+
+# mixer pcm 100 vol 100 cd 100
+4.5.2.
+
+Does FreeBSD support power management on my laptop?
+
+FreeBSD supports the ACPI features found in modern hardware. Further information can be found in acpi(4).
