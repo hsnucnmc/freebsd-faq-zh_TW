@@ -1,0 +1,84 @@
+Chapter 13. Security
+13.1. What is a sandbox?
+13.2. What is securelevel?
+13.3. BIND9 (named) is listening on some high-numbered ports. What is going on?
+13.4. The Sendmail daemon is listening on port 587 as well as the standard port 25! What is going on?
+13.5. What is this UID 0 toor account? Have I been compromised?
+13.1.
+
+What is a sandbox?
+
+“Sandbox” is a security term. It can mean two things:
+
+A process which is placed inside a set of virtual walls that are designed to prevent someone who breaks into the process from being able to break into the wider system.
+
+The process is only able to run inside the walls. Since nothing the process does in regards to executing code is supposed to be able to breach the walls, a detailed audit of its code is not needed in order to be able to say certain things about its security.
+
+The walls might be a user ID, for example. This is the definition used in the security(7) and named(8) man pages.
+
+Take the ntalk service, for example (see inetd(8)). This service used to run as user ID root. Now it runs as user ID tty. The tty user is a sandbox designed to make it more difficult for someone who has successfully hacked into the system via ntalk from being able to hack beyond that user ID.
+
+A process which is placed inside a simulation of the machine. It means that someone who is able to break into the process may believe that he can break into the wider machine but is, in fact, only breaking into a simulation of that machine and not modifying any real data.
+
+The most common way to accomplish this is to build a simulated environment in a subdirectory and then run the processes in that directory chrooted so that / for that process is this directory, not the real / of the system).
+
+Another common use is to mount an underlying file system read-only and then create a file system layer on top of it that gives a process a seemingly writeable view into that file system. The process may believe it is able to write to those files, but only the process sees the effects — other processes in the system do not, necessarily.
+
+An attempt is made to make this sort of sandbox so transparent that the user (or hacker) does not realize that he is sitting in it.
+
+UNIX® implements two core sandboxes. One is at the process level, and one is at the userid level.
+
+Every UNIX® process is completely firewalled off from every other UNIX® process. One process cannot modify the address space of another.
+
+A UNIX® process is owned by a particular userid. If the user ID is not the root user, it serves to firewall the process off from processes owned by other users. The user ID is also used to firewall off on-disk data.
+
+13.2.
+
+What is securelevel?
+
+securelevel is a security mechanism implemented in the kernel. When the securelevel is positive, the kernel restricts certain tasks; not even the superuser (root) is allowed to do them. The securelevel mechanism limits the ability to:
+
+Unset certain file flags, such as schg (the system immutable flag).
+
+Write to kernel memory via /dev/mem and /dev/kmem.
+
+Load kernel modules.
+
+Alter firewall rules.
+
+To check the status of the securelevel on a running system:
+
+# sysctl -n kern.securelevel
+The output contains the current value of the securelevel. If it is greater than 0, at least some of the securelevel's protections are enabled.
+
+The securelevel of a running system cannot be lowered as this would defeat its purpose. If a task requires that the securelevel be non-positive, change the kern_securelevel and kern_securelevel_enable variables in /etc/rc.conf and reboot.
+
+For more information on securelevel and the specific things all the levels do, consult init(8).
+
+Warning: Securelevel is not a silver bullet; it has many known deficiencies. More often than not, it provides a false sense of security.
+One of its biggest problems is that in order for it to be at all effective, all files used in the boot process up until the securelevel is set must be protected. If an attacker can get the system to execute their code prior to the securelevel being set (which happens quite late in the boot process since some things the system must do at start-up cannot be done at an elevated securelevel), its protections are invalidated. While this task of protecting all files used in the boot process is not technically impossible, if it is achieved, system maintenance will become a nightmare since one would have to take the system down, at least to single-user mode, to modify a configuration file.
+
+This point and others are often discussed on the mailing lists, particularly the FreeBSD security mailing list. Search the archives here for an extensive discussion. A more fine-grained mechanism is preferred.
+
+13.3.
+
+BIND9 (named) is listening on some high-numbered ports. What is going on?
+
+BIND uses a random high-numbered port for outgoing queries. Recent versions of it choose a new, random UDP port for each query. This may cause problems for some network configurations, especially if a firewall blocks incoming UDP packets on particular ports. To get past that firewall, try the avoid-v4-udp-ports and avoid-v6-udp-ports options to avoid selecting random port numbers within a blocked range.
+
+Warning: If a port number (like 53) is specified via the query-source or query-source-v6 options in /usr/local/etc/namedb/named.conf, randomized port selection will not be used. It is strongly recommended that these options not be used to specify fixed port numbers.
+Congratulations, by the way. It is good practice to read sockstat(1) output and notice odd things!
+
+13.4.
+
+The Sendmail daemon is listening on port 587 as well as the standard port 25! What is going on?
+
+Recent versions of Sendmail support a mail submission feature that runs over port 587. This is not yet widely supported, but is growing in popularity.
+
+13.5.
+
+What is this UID 0 toor account? Have I been compromised?
+
+Do not worry. toor is an “alternative” superuser account, where toor is root spelled backwards. It is intended to be used with a non-standard shell so the default shell for root does not need to change. This is important as shells which are not part of the base distribution, but are instead installed from ports or packages, are installed in /usr/local/bin which, by default, resides on a different file system. If root's shell is located in /usr/local/bin and the file system containing /usr/local/bin) is not mounted, root will not be able to log in to fix a problem and will have to reboot into single-user mode in order to enter the path to a shell.
+
+Some people use toor for day-to-day root tasks with a non-standard shell, leaving root, with a standard shell, for single-user mode or emergencies. By default, a user cannot log in using toor as it does not have a password, so log in as root and set a password for toor before using it to login.
