@@ -1,0 +1,277 @@
+Chapter 8. Disks, File Systems, and Boot Loaders
+8.1. How can I add my new hard disk to my FreeBSD system?
+8.2. How do I move my system over to my huge new disk?
+8.3. Which partitions can safely use Soft Updates? I have heard that Soft Updates on / can cause problems. What about Journaled Soft Updates?
+8.4. Can I mount other foreign file systems under FreeBSD?
+8.5. How do I mount a secondary DOS partition?
+8.6. Is there a cryptographic file system for FreeBSD?
+8.7. How do I boot FreeBSD and Linux® using GRUB?
+8.8. How do I boot FreeBSD and Linux® using BootEasy?
+8.9. How do I change the boot prompt from ??? to something more meaningful?
+8.10. How do I use a new removable drive?
+8.11. Why do I get Incorrect super block when mounting a CD?
+8.12. Why do I get Device not configured when mounting a CD?
+8.13. Why do all non-English characters in filenames show up as “?” on my CDs when mounted in FreeBSD?
+8.14. A CD burned under FreeBSD cannot be read under any other operating system. Why?
+8.15. How can I create an image of a data CD?
+8.16. Why can I not mount an audio CD?
+8.17. How do I mount a multi-session CD?
+8.18. How do I let ordinary users mount CD-ROMs, DVDs, USB drives, and other removable media?
+8.19. The du and df commands show different amounts of disk space available. What is going on?
+8.20. How can I add more swap space?
+8.21. Why does FreeBSD see my disk as smaller than the manufacturer says it is?
+8.22. How is it possible for a partition to be more than 100% full?
+8.1.
+
+How can I add my new hard disk to my FreeBSD system?
+
+See the Adding Disks section in the FreeBSD Handbook.
+
+8.2.
+
+How do I move my system over to my huge new disk?
+
+The best way is to reinstall the operating system on the new disk, then move the user data over. This is highly recommended when tracking -STABLE for more than one release or when updating a release instead of installing a new one. Install booteasy on both disks with boot0cfg(8) and dual boot until you are happy with the new configuration. Skip the next paragraph to find out how to move the data after doing this.
+
+Alternatively, partition and label the new disk with either sade(8) or gpart(8). If the disks are MBR-formatted, booteasy can be installed on both disks with boot0cfg(8) so that the computer can dual boot to the old or new system after the copying is done.
+
+Once the new disk set up, the data cannot just be copied. Instead, use tools that understand device files and system flags, such as dump(8). Although it is recommended to move the data while in single-user mode, it is not required.
+
+When the disks are formatted with UFS, never use anything but dump(8) and restore(8) to move the root file system. These commands should also be used when moving a single partition to another empty partition. The sequence of steps to use dump to move the data from one UFS partitions to a new partition is:
+
+newfs the new partition.
+
+mount it on a temporary mount point.
+
+cd to that directory.
+
+dump the old partition, piping output to the new one.
+
+For example, to move /dev/ada1s1a with /mnt as the temporary mount point, type:
+
+# newfs /dev/ada1s1a
+# mount /dev/ada1s1a /mnt
+# cd /mnt
+# dump 0af - / | restore rf -
+Rearranging partitions with dump takes a bit more work. To merge a partition like /var into its parent, create the new partition large enough for both, move the parent partition as described above, then move the child partition into the empty directory that the first move created:
+
+# newfs /dev/ada1s1a
+# mount /dev/ada1s1a /mnt
+# cd /mnt
+# dump 0af - / | restore rf -
+# cd var
+# dump 0af - /var | restore rf -
+To split a directory from its parent, say putting /var on its own partition when it was not before, create both partitions, then mount the child partition on the appropriate directory in the temporary mount point, then move the old single partition:
+
+# newfs /dev/ada1s1a
+# newfs /dev/ada1s1d
+# mount /dev/ada1s1a /mnt
+# mkdir /mnt/var
+# mount /dev/ada1s1d /mnt/var
+# cd /mnt
+# dump 0af - / | restore rf -
+The cpio(1) and pax(1) utilities are also available for moving user data. These are known to lose file flag information, so use them with caution.
+
+8.3.
+
+Which partitions can safely use Soft Updates? I have heard that Soft Updates on / can cause problems. What about Journaled Soft Updates?
+
+Short answer: Soft Updates can usually be safely used on all partitions.
+
+Long answer: Soft Updates has two characteristics that may be undesirable on certain partitions. First, a Soft Updates partition has a small chance of losing data during a system crash. The partition will not be corrupted as the data will simply be lost. Second, Soft Updates can cause temporary space shortages.
+
+When using Soft Updates, the kernel can take up to thirty seconds to write changes to the physical disk. When a large file is deleted the file still resides on disk until the kernel actually performs the deletion. This can cause a very simple race condition. Suppose one large file is deleted and another large file is immediately created. The first large file is not yet actually removed from the physical disk, so the disk might not have enough room for the second large file. This will produce an error that the partition does not have enough space, even though a large chunk of space has just been released. A few seconds later, the file creation works as expected.
+
+If a system should crash after the kernel accepts a chunk of data for writing to disk, but before that data is actually written out, data could be lost. This risk is extremely small, but generally manageable.
+
+These issues affect all partitions using Soft Updates. So, what does this mean for the root partition?
+
+Vital information on the root partition changes very rarely. If the system crashed during the thirty-second window after such a change is made, it is possible that data could be lost. This risk is negligible for most applications, but be aware that it exists. If the system cannot tolerate this much risk, do not use Soft Updates on the root file system!
+
+/ is traditionally one of the smallest partitions. If /tmp is on /, there may be intermittent space problems. Symlinking /tmp to /var/tmp will solve this problem.
+
+Finally, dump(8) does not work in live mode (-L) on a filesystem, with Journaled Soft Updates (SU+J).
+
+8.4.
+
+Can I mount other foreign file systems under FreeBSD?
+
+FreeBSD supports a variety of other file systems.
+
+UFS
+UFS CD-ROMs can be mounted directly on FreeBSD. Mounting disk partitions from Digital UNIX and other systems that support UFS may be more complex, depending on the details of the disk partitioning for the operating system in question.
+
+ext2/ext3
+FreeBSD supports ext2fs and ext3fs partitions. See ext2fs(5) for more information.
+
+NTFS
+FUSE based NTFS support is available as a port (sysutils/fusefs-ntfs). For more information see ntfs-3g.
+
+FAT
+FreeBSD includes a read-write FAT driver. For more information, see mount_msdosfs(8).
+
+ZFS
+FreeBSD includes a port of Sun™'s ZFS driver. The current recommendation is to use it only on amd64 platforms with sufficient memory. For more information, see zfs(8).
+
+FreeBSD includes the Network File System NFS and the FreeBSD Ports Collection provides several FUSE applications to support many other file systems.
+
+8.5.
+
+How do I mount a secondary DOS partition?
+
+The secondary DOS partitions are found after all the primary partitions. For example, if E is the second DOS partition on the second SCSI drive, there will be a device file for “slice 5” in /dev. To mount it:
+
+# mount -t msdosfs /dev/da1s5 /dos/e
+8.6.
+
+Is there a cryptographic file system for FreeBSD?
+
+Yes, gbde(8) and geli(8). See the Encrypting Disk Partitions section of the FreeBSD Handbook.
+
+8.7.
+
+How do I boot FreeBSD and Linux® using GRUB?
+
+To boot FreeBSD using GRUB, add the following to either /boot/grub/menu.lst or /boot/grub/grub.conf, depending upon which is used by the Linux® distribution.
+
+title FreeBSD 9.1
+	root (hd0,a)
+	kernel /boot/loader
+Where hd0,a points to the root partition on the first disk. To specify the slice number, use something like this (hd0,2,a). By default, if the slice number is omitted, GRUB searches the first slice which has the a partition.
+
+8.8.
+
+How do I boot FreeBSD and Linux® using BootEasy?
+
+Install LILO at the start of the Linux® boot partition instead of in the Master Boot Record. You can then boot LILO from BootEasy.
+
+This is recommended when running Windows® and Linux® as it makes it simpler to get Linux® booting again if Windows® is reinstalled.
+
+8.9.
+
+How do I change the boot prompt from ??? to something more meaningful?
+
+This cannot be accomplished with the standard boot manager without rewriting it. There are a number of other boot managers in the sysutils category of the Ports Collection.
+
+8.10.
+
+How do I use a new removable drive?
+
+If the drive already has a file system on it, use a command like this:
+
+# mount -t msdosfs /dev/da0s1 /mnt
+If the drive will only be used with FreeBSD systems, partition it with UFS or ZFS. This will provide long filename support, improvement in performance, and stability. If the drive will be used by other operating systems, a more portable choice, such as msdosfs, is better.
+
+# dd if=/dev/zero of=/dev/da0 count=2
+# gpart create -s GPT /dev/da0
+# gpart add -t freebsd-ufs /dev/da0
+Finally, create a new file system:
+
+# newfs /dev/da0p1
+and mount it:
+
+# mount /dev/da0s1 /mnt
+It is a good idea to add a line to /etc/fstab (see fstab(5)) so you can just type mount /mnt in the future:
+
+/dev/da0p1 /mnt ufs rw,noauto 0 0
+8.11.
+
+Why do I get Incorrect super block when mounting a CD?
+
+The type of device to mount must be specified. This is described in the Handbook section on Using Data CDs.
+
+8.12.
+
+Why do I get Device not configured when mounting a CD?
+
+This generally means that there is no CD in the drive, or the drive is not visible on the bus. Refer to the Using Data CDs section of the Handbook for a detailed discussion of this issue.
+
+8.13.
+
+Why do all non-English characters in filenames show up as “?” on my CDs when mounted in FreeBSD?
+
+The CD probably uses the “Joliet” extension for storing information about files and directories. This is discussed in the Handbook section on Using Data CD-ROMs.
+
+8.14.
+
+A CD burned under FreeBSD cannot be read under any other operating system. Why?
+
+This means a raw file was burned to the CD, rather than creating an ISO 9660 file system. Take a look at the Handbook section on Using Data CDs.
+
+8.15.
+
+How can I create an image of a data CD?
+
+This is discussed in the Handbook section on Writing Data to an ISO File System. For more on working with CD-ROMs, see the Creating CDs Section in the Storage chapter in the Handbook.
+
+8.16.
+
+Why can I not mount an audio CD?
+
+Trying to mount an audio CD will produce an error like cd9660: /dev/cd0: Invalid argument. This is because mount only works on file systems. Audio CDs do not have file systems; they just have data. Instead, use a program that reads audio CDs, such as the audio/xmcd package or port.
+
+8.17.
+
+How do I mount a multi-session CD?
+
+By default, mount(8) will attempt to mount the last data track (session) of a CD. To load an earlier session, use the -s command line argument. Refer to mount_cd9660(8) for specific examples.
+
+8.18.
+
+How do I let ordinary users mount CD-ROMs, DVDs, USB drives, and other removable media?
+
+As root set the sysctl variable vfs.usermount to 1.
+
+# sysctl vfs.usermount=1
+To make this persist across reboots, add the line vfs.usermount=1 to /etc/sysctl.conf so that it is reset at system boot time.
+
+Users can only mount devices they have read permissions to. To allow users to mount a device permissions must be set in /etc/devfs.conf.
+
+For example, to allow users to mount the first USB drive add:
+
+# Allow all users to mount a USB drive.
+	    own       /dev/da0       root:operator
+	    perm      /dev/da0       0666
+All users can now mount devices they could read onto a directory that they own:
+
+% mkdir ~/my-mount-point
+% mount -t msdosfs /dev/da0 ~/my-mount-point
+Unmounting the device is simple:
+
+% umount ~/my-mount-point
+Enabling vfs.usermount, however, has negative security implications. A better way to access MS-DOS® formatted media is to use the emulators/mtools package in the Ports Collection.
+
+Note: The device name used in the previous examples must be changed according to the configuration.
+8.19.
+
+The du and df commands show different amounts of disk space available. What is going on?
+
+This is due to how these commands actually work. du goes through the directory tree, measures how large each file is, and presents the totals. df just asks the file system how much space it has left. They seem to be the same thing, but a file without a directory entry will affect df but not du.
+
+When a program is using a file, and the file is deleted, the file is not really removed from the file system until the program stops using it. The file is immediately deleted from the directory listing, however. As an example, consider a file large enough to affect the output of du and df. A file being viewed with more can be deleted wihout causing an error. The entry is removed from the directory so no other program or user can access it. However, du shows that it is gone as it has walked the directory tree and the file is not listed. df shows that it is still there, as the file system knows that more is still using that space. Once the more session ends, du and df will agree.
+
+This situation is common on web servers. Many people set up a FreeBSD web server and forget to rotate the log files. The access log fills up /var. The new administrator deletes the file, but the system still complains that the partition is full. Stopping and restarting the web server program would free the file, allowing the system to release the disk space. To prevent this from happening, set up newsyslog(8).
+
+Note that Soft Updates can delay the freeing of disk space and it can take up to 30 seconds for the change to be visible.
+
+8.20.
+
+How can I add more swap space?
+
+This section of the Handbook describes how to do this.
+
+8.21.
+
+Why does FreeBSD see my disk as smaller than the manufacturer says it is?
+
+Disk manufacturers calculate gigabytes as a billion bytes each, whereas FreeBSD calculates them as 1,073,741,824 bytes each. This explains why, for example, FreeBSD's boot messages will report a disk that supposedly has 80 GB as holding 76,319 MB.
+
+Also note that FreeBSD will (by default) reserve 8% of the disk space.
+
+8.22.
+
+How is it possible for a partition to be more than 100% full?
+
+A portion of each UFS partition (8%, by default) is reserved for use by the operating system and the root user. df(1) does not count that space when calculating the Capacity column, so it can exceed 100%. Notice that the Blocks column is always greater than the sum of the Used and Avail columns, usually by a factor of 8%.
+
+For more details, look up -m in tunefs(8).
