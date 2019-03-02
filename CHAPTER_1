@@ -1,0 +1,178 @@
+Chapter 1. Introduction
+1.1. What is FreeBSD?
+1.2. What is the goal of the FreeBSD Project?
+1.3. Does the FreeBSD license have any restrictions?
+1.4. Can FreeBSD replace my current operating system?
+1.5. Why is it called FreeBSD?
+1.6. What are the differences between FreeBSD and NetBSD, OpenBSD, and other open source BSD operating systems?
+1.7. What is the latest version of FreeBSD?
+1.8. What is FreeBSD-CURRENT?
+1.9. What is the FreeBSD-STABLE concept?
+1.10. When are FreeBSD releases made?
+1.11. Who is responsible for FreeBSD?
+1.12. Where can I get FreeBSD?
+1.13. How do I access the Problem Report database?
+1.1.
+
+What is FreeBSD?
+
+FreeBSD is a modern operating system for desktops, laptops, servers, and embedded systems with support for a large number of platforms.
+
+It is based on U.C. Berkeley's “4.4BSD-Lite” release, with some “4.4BSD-Lite2” enhancements. It is also based indirectly on William Jolitz's port of U.C. Berkeley's “Net/2” to the i386™, known as “386BSD”, though very little of the 386BSD code remains.
+
+FreeBSD is used by companies, Internet Service Providers, researchers, computer professionals, students and home users all over the world in their work, education and recreation.
+
+For more detailed information on FreeBSD, refer to the FreeBSD Handbook.
+
+1.2.
+
+What is the goal of the FreeBSD Project?
+
+The goal of the FreeBSD Project is to provide a stable and fast general purpose operating system that may be used for any purpose without strings attached.
+
+1.3.
+
+Does the FreeBSD license have any restrictions?
+
+Yes. Those restrictions do not control how the code is used, but how to treat the FreeBSD Project itself. The license itself is available at license and can be summarized like this:
+
+Do not claim that you wrote this.
+
+Do not sue us if it breaks.
+
+Do not remove or modify the license.
+
+Many of us have a significant investment in the project and would certainly not mind a little financial compensation now and then, but we definitely do not insist on it. We believe that our first and foremost “mission” is to provide code to any and all comers, and for whatever purpose, so that the code gets the widest possible use and provides the widest possible benefit. This, we believe, is one of the most fundamental goals of Free Software and one that we enthusiastically support.
+
+Code in our source tree which falls under the GNU General Public License (GPL) or GNU Library General Public License (LGPL) comes with slightly more strings attached, though at least on the side of enforced access rather than the usual opposite. Due to the additional complexities that can evolve in the commercial use of GPL software, we do, however, endeavor to replace such software with submissions under the more relaxed FreeBSD license whenever possible.
+
+1.4.
+
+Can FreeBSD replace my current operating system?
+
+For most people, yes. But this question is not quite that cut-and-dried.
+
+Most people do not actually use an operating system. They use applications. The applications are what really use the operating system. FreeBSD is designed to provide a robust and full-featured environment for applications. It supports a wide variety of web browsers, office suites, email readers, graphics programs, programming environments, network servers, and much more. Most of these applications can be managed through the Ports Collection.
+
+If an application is only available on one operating system, that operating system cannot just be replaced. Chances are, there is a very similar application on FreeBSD, however. As a solid office or Internet server or a reliable workstation, FreeBSD will almost certainly do everything you need. Many computer users across the world, including both novices and experienced UNIX® administrators, use FreeBSD as their only desktop operating system.
+
+Users migrating to FreeBSD from another UNIX®-like environment will find FreeBSD to be similar. Windows® and Mac OS® users may be interested in instead using TrueOS, a FreeBSD-based desktop distribution. Non-UNIX® users should expect to invest some additional time learning the UNIX® way of doing things. This FAQ and the FreeBSD Handbook are excellent places to start.
+
+1.5.
+
+Why is it called FreeBSD?
+
+It may be used free of charge, even by commercial users.
+
+Full source for the operating system is freely available, and the minimum possible restrictions have been placed upon its use, distribution and incorporation into other work (commercial or non-commercial).
+
+Anyone who has an improvement or bug fix is free to submit their code and have it added to the source tree (subject to one or two obvious provisions).
+
+It is worth pointing out that the word “free” is being used in two ways here: one meaning “at no cost” and the other meaning “do whatever you like”. Apart from one or two things you cannot do with the FreeBSD code, for example pretending you wrote it, you can really do whatever you like with it.
+
+1.6.
+
+What are the differences between FreeBSD and NetBSD, OpenBSD, and other open source BSD operating systems?
+
+James Howard wrote a good explanation of the history and differences between the various projects, called The BSD Family Tree which goes a fair way to answering this question. Some of the information is out of date, but the history portion in particular remains accurate.
+
+Most of the BSDs share patches and code, even today. All of the BSDs have common ancestry.
+
+The design goals of FreeBSD are described in Q: 1.2, above. The design goals of the other most popular BSDs may be summarized as follows:
+
+OpenBSD aims for operating system security above all else. The OpenBSD team wrote ssh(1) and pf(4), which have both been ported to FreeBSD.
+
+NetBSD aims to be easily ported to other hardware platforms.
+
+DragonFly BSD is a fork of FreeBSD 4.8 that has since developed many interesting features of its own, including the HAMMER file system and support for user-mode “vkernels”.
+
+1.7.
+
+What is the latest version of FreeBSD?
+
+At any point in the development of FreeBSD, there can be multiple parallel branches. 12.X releases are made from the 12-STABLE branch, and 11.X releases are made from the 11-STABLE branch.
+
+Up until the release of 9.0, the 11.X series was the one known as -STABLE. However, as of 13.X, the 11.X branch will be designated for an “extended support” status and receive only fixes for major problems, such as security-related fixes.
+
+Version 12.0 is the latest release from the 12-STABLE branch; it was released in December 2018. Version 10.4 is the latest release from the 11-STABLE branch; it was released in October 2017.
+
+Releases are made every few months. While many people stay more up-to-date with the FreeBSD sources (see the questions on FreeBSD-CURRENT and FreeBSD-STABLE) than that, doing so is more of a commitment, as the sources are a moving target.
+
+More information on FreeBSD releases can be found on the Release Engineering page and in release(7).
+
+1.8.
+
+What is FreeBSD-CURRENT?
+
+FreeBSD-CURRENT is the development version of the operating system, which will in due course become the new FreeBSD-STABLE branch. As such, it is really only of interest to developers working on the system and die-hard hobbyists. See the relevant section in the Handbook for details on running -CURRENT.
+
+Users not familiar with FreeBSD should not use FreeBSD-CURRENT. This branch sometimes evolves quite quickly and due to mistake can be un-buildable at times. People that use FreeBSD-CURRENT are expected to be able to analyze, debug, and report problems.
+
+FreeBSD snapshot releases are made based on the current state of the -CURRENT and -STABLE branches. The goals behind each snapshot release are:
+
+To test the latest version of the installation software.
+
+To give people who would like to run -CURRENT or -STABLE but who do not have the time or bandwidth to follow it on a day-to-day basis an easy way of bootstrapping it onto their systems.
+
+To preserve a fixed reference point for the code in question, just in case we break something really badly later. (Although Subversion normally prevents anything horrible like this happening.)
+
+To ensure that all new features and fixes in need of testing have the greatest possible number of potential testers.
+
+No claims are made that any -CURRENT snapshot can be considered “production quality” for any purpose. If a stable and fully tested system is needed, stick to full releases.
+
+Snapshot releases are directly available from snapshot.
+
+Official snapshots are generated on a regular basis for all actively developed branches.
+
+1.9.
+
+What is the FreeBSD-STABLE concept?
+
+Back when FreeBSD 2.0.5 was released, FreeBSD development branched in two. One branch was named -STABLE, one -CURRENT. FreeBSD-STABLE is the development branch from which major releases are made. Changes go into this branch at a slower pace and with the general assumption that they have first been tested in FreeBSD-CURRENT. However, at any given time, the sources for FreeBSD-STABLE may or may not be suitable for general use, as it may uncover bugs and corner cases that were not yet found in FreeBSD-CURRENT. Users who do not have the resources to perform testing should instead run the most recent release of FreeBSD. FreeBSD-CURRENT, on the other hand, has been one unbroken line since 2.0 was released, leading towards 12.0-RELEASE and beyond. For more detailed information on branches see “FreeBSD Release Engineering: Creating the Release Branch”, the status of the branches and the upcoming release schedule can be found on the Release Engineering Information page.
+
+12.0-STABLE is the actively developed -STABLE branch. The latest release on the 12.0-STABLE branch is 12.0-RELEASE, which was released in December 2018.
+
+The 12-CURRENT branch is the actively developed -CURRENT branch toward the next generation of FreeBSD. See What is FreeBSD-CURRENT? for more information on this branch.
+
+1.10.
+
+When are FreeBSD releases made?
+
+The Release Engineering Team <re@FreeBSD.org> releases a new major version of FreeBSD about every 18 months and a new minor version about every 8 months, on average. Release dates are announced well in advance, so that the people working on the system know when their projects need to be finished and tested. A testing period precedes each release, to ensure that the addition of new features does not compromise the stability of the release. Many users regard this caution as one of the best things about FreeBSD, even though waiting for all the latest goodies to reach -STABLE can be a little frustrating.
+
+More information on the release engineering process (including a schedule of upcoming releases) can be found on the release engineering pages on the FreeBSD Web site.
+
+For people who need or want a little more excitement, binary snapshots are made weekly as discussed above.
+
+1.11.
+
+Who is responsible for FreeBSD?
+
+The key decisions concerning the FreeBSD project, such as the overall direction of the project and who is allowed to add code to the source tree, are made by a core team of 9 people. There is a much larger team of more than 350 committers who are authorized to make changes directly to the FreeBSD source tree.
+
+However, most non-trivial changes are discussed in advance in the mailing lists, and there are no restrictions on who may take part in the discussion.
+
+1.12.
+
+Where can I get FreeBSD?
+
+Every significant release of FreeBSD is available via anonymous FTP from the FreeBSD FTP site:
+
+The latest 12-STABLE release, 12.0-RELEASE can be found in the 12.0-RELEASE directory.
+
+Snapshot releases are made monthly for the -CURRENT and -STABLE branch, these being of service purely to bleeding-edge testers and developers.
+
+The latest 11-STABLE release, 10.4-RELEASE can be found in the 10.4-RELEASE directory.
+
+Information about obtaining FreeBSD on CD, DVD, and other media can be found in the Handbook.
+
+1.13.
+
+How do I access the Problem Report database?
+
+The Problem Report database of all user change requests may be queried by using our web-based PR query interface.
+
+The web-based problem report submission interface can be used to submit problem reports through a web browser.
+
+Before submitting a problem report, read Writing FreeBSD Problem Reports, an article on how to write good problem reports.
+
