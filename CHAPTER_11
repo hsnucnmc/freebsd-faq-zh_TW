@@ -1,0 +1,257 @@
+Chapter 11. The X Window System and Virtual Consoles
+11.1. What is the X Window System?
+11.2. I want to run Xorg, how do I go about it?
+11.3. I tried to run X, but I get a No devices detected. error when I type startx. What do I do now?
+11.4. Why does my mouse not work with X?
+11.5. My mouse has a fancy wheel. Can I use it in X?
+11.6. My laptop has a Synaptics touchpad. Can I use it in X?
+11.7. How do I use remote X displays?
+11.8. What is a virtual console and how do I make more?
+11.9. How do I access the virtual consoles from X?
+11.10. How do I start XDM on boot?
+11.11. Why do I get Couldn't open console when I run xconsole?
+11.12. Why does my PS/2 mouse misbehave under X?
+11.13. How do I reverse the mouse buttons?
+11.14. How do I install a splash screen and where do I find them?
+11.15. Can I use the Windows keys on my keyboard in X?
+11.16. How can I get 3D hardware acceleration for OpenGL®?
+11.1.
+
+What is the X Window System?
+
+The X Window System (commonly X11) is the most widely available windowing system capable of running on UNIX® or UNIX® like systems, including FreeBSD. The X.Org Foundation administers the X protocol standards, with the current reference implementation, version 11 release 7.7, so references are often shortened to X11.
+
+Many implementations are available for different architectures and operating systems. An implementation of the server-side code is properly known as an X server.
+
+11.2.
+
+I want to run Xorg, how do I go about it?
+
+To install Xorg do one of the following:
+
+Use the x11/xorg meta-port, which builds and installs every Xorg component.
+
+Use x11/xorg-minimal, which builds and installs only the necessary Xorg components.
+
+Install Xorg from FreeBSD packages:
+
+# pkg install xorg
+After the installation of Xorg, follow the instructions from the X11 Configuration section of the FreeBSD Handbook.
+
+11.3.
+
+I tried to run X, but I get a No devices detected. error when I type startx. What do I do now?
+
+The system is probably running at a raised securelevel. It is not possible to start X at a raised securelevel because X requires write access to io(4). For more information, see at the init(8) manual page.
+
+There are two solutions to the problem: set the securelevel back down to zero or run xdm(1) (or an alternative display manager) at boot time before the securelevel is raised.
+
+See Q: 11.10 for more information about running xdm(1) at boot time.
+
+11.4.
+
+Why does my mouse not work with X?
+
+When using syscons(4), the default console driver, FreeBSD can be configured to support a mouse pointer on each virtual screen. To avoid conflicting with X, syscons(4) supports a virtual device called /dev/sysmouse. All mouse events received from the real mouse device are written to the sysmouse(4) device via moused(8). To use the mouse on one or more virtual consoles, and use X, see Q: 4.4.1 and set up moused(8).
+
+Then edit /etc/X11/xorg.conf and make sure the following lines exist:
+
+Section "InputDevice"
+   Option          "Protocol" "SysMouse"
+   Option          "Device" "/dev/sysmouse"
+.....
+Starting with Xorg version 7.4, the InputDevice sections in xorg.conf are ignored in favor of autodetected devices. To restore the old behavior, add the following line to the ServerLayout or ServerFlags section:
+
+Option "AutoAddDevices" "false"
+Some people prefer to use /dev/mouse under X. To make this work, /dev/mouse should be linked to /dev/sysmouse (see sysmouse(4)) by adding the following line to /etc/devfs.conf (see devfs.conf(5)):
+
+link    sysmouse    mouse
+This link can be created by restarting devfs(5) with the following command (as root):
+
+# service devfs restart
+11.5.
+
+My mouse has a fancy wheel. Can I use it in X?
+
+Yes, if X is configured for a 5 button mouse. To do this, add the lines Buttons 5 and ZAxisMapping 4 5 to the “InputDevice” section of /etc/X11/xorg.conf, as seen in this example:
+
+Section "InputDevice"
+   Identifier      "Mouse1"
+   Driver          "mouse"
+   Option          "Protocol" "auto"
+   Option          "Device" "/dev/sysmouse"
+   Option          "Buttons" "5"
+   Option          "ZAxisMapping" "4 5"
+EndSection
+The mouse can be enabled in Emacsby adding these lines to ~/.emacs:
+
+;; wheel mouse
+(global-set-key [mouse-4] 'scroll-down)
+(global-set-key [mouse-5] 'scroll-up)
+11.6.
+
+My laptop has a Synaptics touchpad. Can I use it in X?
+
+Yes, after configuring a few things to make it work.
+
+In order to use the Xorg synaptics driver, first remove moused_enable from rc.conf.
+
+To enable synaptics, add the following line to /boot/loader.conf:
+
+hw.psm.synaptics_support="1"
+Add the following to /etc/X11/xorg.conf:
+
+Section "InputDevice"
+Identifier  "Touchpad0"
+Driver      "synaptics"
+Option      "Protocol" "psm"
+Option      "Device" "/dev/psm0"
+EndSection
+And be sure to add the following into the “ServerLayout” section:
+
+InputDevice    "Touchpad0" "SendCoreEvents"
+11.7.
+
+How do I use remote X displays?
+
+For security reasons, the default setting is to not allow a machine to remotely open a window.
+
+To enable this feature, start X with the optional -listen_tcp argument:
+
+% startx -listen_tcp
+11.8.
+
+What is a virtual console and how do I make more?
+
+Virtual consoles provide several simultaneous sessions on the same machine without doing anything complicated like setting up a network or running X.
+
+When the system starts, it will display a login prompt on the monitor after displaying all the boot messages. Type in your login name and password to start working on the first virtual console.
+
+To start another session, perhaps to look at documentation for a program or to read mail while waiting for an FTP transfer to finish, hold down Alt and press F2. This will display the login prompt for the second virtual console. To go back to the original session, press Alt+F1.
+
+The default FreeBSD installation has eight virtual consoles enabled. Alt+F1, Alt+F2, Alt+F3, and so on will switch between these virtual consoles.
+
+To enable more of virtual consoles, edit /etc/ttys (see ttys(5)) and add entries for ttyv8 to ttyvc, after the comment on “Virtual terminals”:
+
+# Edit the existing entry for ttyv8 in /etc/ttys and change
+# "off" to "on".
+ttyv8   "/usr/libexec/getty Pc"         xterm  on secure
+ttyv9   "/usr/libexec/getty Pc"         xterm  on secure
+ttyva   "/usr/libexec/getty Pc"         xterm  on secure
+ttyvb   "/usr/libexec/getty Pc"         xterm  on secure
+The more virtual terminals, the more resources that are used. This can be problematic on systems with 8 MB RAM or less. Consider changing secure to insecure.
+
+Important: In order to run an X server, at least one virtual terminal must be left to off for it to use. This means that only eleven of the Alt-function keys can be used as virtual consoles so that one is left for the X server.
+For example, to run X and eleven virtual consoles, the setting for virtual terminal 12 should be:
+
+ttyvb   "/usr/libexec/getty Pc"         xterm  off secure
+The easiest way to activate the virtual consoles is to reboot.
+
+11.9.
+
+How do I access the virtual consoles from X?
+
+Use Ctrl+Alt+Fn to switch back to a virtual console. Press Ctrl+Alt+F1 to return to the first virtual console.
+
+Once at a text console, use Alt+Fn to move between them.
+
+To return to the X session, switch to the virtual console running X. If X was started from the command line using startx, the X session will attach to the next unused virtual console, not the text console from which it was invoked. For eight active virtual terminals, X will run on the ninth, so use Alt+F9.
+
+11.10.
+
+How do I start XDM on boot?
+
+There are two schools of thought on how to start xdm(1). One school starts xdm from /etc/ttys (see ttys(5)) using the supplied example, while the other runs xdm from rc.local (see rc(8)) or from an X script in /usr/local/etc/rc.d. Both are equally valid, and one may work in situations where the other does not. In both cases the result is the same: X will pop up a graphical login prompt.
+
+The ttys(5) method has the advantage of documenting which vty X will start on and passing the responsibility of restarting the X server on logout to init(8). The rc(8) method makes it easy to kill xdm if there is a problem starting the X server.
+
+If loaded from rc(8), xdm should be started without any arguments. xdm must start after getty(8) runs, or else getty and xdm will conflict, locking out the console. The best way around this is to have the script sleep 10 seconds or so then launch xdm.
+
+When starting xdm from /etc/ttys, there still is a chance of conflict between xdm and getty(8). One way to avoid this is to add the vt number in /usr/local/lib/X11/xdm/Xservers:
+
+:0 local /usr/local/bin/X vt4
+The above example will direct the X server to run in /dev/ttyv3. Note the number is offset by one. The X server counts the vty from one, whereas the FreeBSD kernel numbers the vty from zero.
+
+11.11.
+
+Why do I get Couldn't open console when I run xconsole?
+
+When X is started with startx, the permissions on /dev/console will not get changed, resulting in things like xterm -C and xconsole not working.
+
+This is because of the way console permissions are set by default. On a multi-user system, one does not necessarily want just any user to be able to write on the system console. For users who are logging directly onto a machine with a VTY, the fbtab(5) file exists to solve such problems.
+
+In a nutshell, make sure an uncommented line of the form is in /etc/fbtab (see fbtab(5)):
+
+/dev/ttyv0 0600 /dev/console
+It will ensure that whomever logs in on /dev/ttyv0 will own the console.
+
+11.12.
+
+Why does my PS/2 mouse misbehave under X?
+
+The mouse and the mouse driver may have become out of synchronization. In rare cases, the driver may also erroneously report synchronization errors:
+
+psmintr: out of sync (xxxx != yyyy)
+If this happens, disable the synchronization check code by setting the driver flags for the PS/2 mouse driver to 0x100. This can be easiest achieved by adding hint.psm.0.flags="0x100" to /boot/loader.conf and rebooting.
+
+11.13.
+
+How do I reverse the mouse buttons?
+
+Type xmodmap -e "pointer = 3 2 1". Add this command to ~/.xinitrc or ~/.xsession to make it happen automatically.
+
+11.14.
+
+How do I install a splash screen and where do I find them?
+
+The detailed answer for this question can be found in the Boot Time Splash Screens section of the FreeBSD Handbook.
+
+11.15.
+
+Can I use the Windows keys on my keyboard in X?
+
+Yes. Use xmodmap(1) to define which functions the keys should perform.
+
+Assuming all Windows keyboards are standard, the keycodes for these three keys are the following:
+
+115 — Windows key, between the left-hand Ctrl and Alt keys
+
+116 — Windows key, to the right of AltGr
+
+117 — Menu, to the left of the right-hand Ctrl
+
+To have the left Windows key print a comma, try this.
+
+# xmodmap -e "keycode 115 = comma"
+To have the Windows key-mappings enabled automatically every time X is started, either put the xmodmap commands in ~/.xinitrc or, preferably, create a ~/.xmodmaprc and include the xmodmap options, one per line, then add the following line to ~/.xinitrc:
+
+xmodmap $HOME/.xmodmaprc
+For example, to map the 3 keys to be F13, F14, and F15, respectively. This would make it easy to map them to useful functions within applications or the window manager.
+
+To do this, put the following in ~/.xmodmaprc.
+
+keycode 115 = F13
+keycode 116 = F14
+keycode 117 = F15
+For the x11-wm/fvwm2 desktop manager, one could map the keys so that F13 iconifies or de-iconifies the window the cursor is in, F14 brings the window the cursor is in to the front or, if it is already at the front, pushes it to the back, and F15 pops up the main Workplace menu even if the cursor is not on the desktop, which is useful when no part of the desktop is visible.
+
+The following entries in ~/.fvwmrc implement the aforementioned setup:
+
+Key F13        FTIWS    A        Iconify
+Key F14        FTIWS    A        RaiseLower
+Key F15        A        A        Menu Workplace Nop
+11.16.
+
+How can I get 3D hardware acceleration for OpenGL®?
+
+The availability of 3D acceleration depends on the version of Xorg and the type of video chip. For an nVidia chip, use the binary drivers provided for FreeBSD by installing one of the following ports:
+
+The latest versions of nVidia cards are supported by the x11/nvidia-driver port.
+
+Older drivers are available as x11/nvidia-driver-###
+
+nVidia provides detailed information on which card is supported by which driver on their web site: http://www.nvidia.com/object/IO_32667.html.
+
+For Matrox G200/G400, check the x11-drivers/xf86-video-mga port.
+
+For ATI Rage 128 and Radeon see ati(4), r128(4) and radeon(4).
