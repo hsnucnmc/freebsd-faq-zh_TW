@@ -1,0 +1,294 @@
+Chapter 14. PPP
+14.1. I cannot make ppp(8) work. What am I doing wrong?
+14.2. Why does ppp(8) hang when I run it?
+14.3. Why will ppp(8) not dial in -auto mode?
+14.4. What does No route to host mean?
+14.5. Why does my connection drop after about 3 minutes?
+14.6. Why does my connection drop under heavy load?
+14.7. Why does my connection drop after a random amount of time?
+14.8. Why does my connection hang after a random amount of time?
+14.9. The remote end is not responding. What can I do?
+14.10. ppp(8) has hung. What can I do?
+14.11. I keep seeing errors about magic being the same. What does it mean?
+14.12. LCP negotiations continue until the connection is closed. What is wrong?
+14.13. Why does ppp(8) lock up when I shell out to test it?
+14.14. Why does ppp(8) over a null-modem cable never exit?
+14.15. Why does ppp(8) dial for no reason in -auto mode?
+14.16. What do these CCP errors mean?
+14.17. Why does ppp(8) not log my connection speed?
+14.18. Why does ppp(8) ignore the \ character in my chat script?
+14.19. What are FCS errors?
+14.20. None of this helps — I am desperate! What can I do?
+14.1.
+
+I cannot make ppp(8) work. What am I doing wrong?
+
+First, read ppp(8) and the PPP section of the Handbook. To assist in troubleshooting, enable logging with the following command:
+
+set log Phase Chat Connect Carrier lcp ipcp ccp command
+This command may be typed at the ppp(8) command prompt or it may be entered at the start of the default section in /etc/ppp/ppp.conf. Make sure that /etc/syslog.conf contains the lines below and the file /var/log/ppp.log exists:
+
+!ppp
+*.*        /var/log/ppp.log
+A lot about what is going can be learned from the log file. Do not worry if it does not all make sense as it may make sense to someone else.
+
+14.2.
+
+Why does ppp(8) hang when I run it?
+
+This is usually because the hostname will not resolve. The best way to fix this is to make sure that /etc/hosts is read first by the by ensuring that the hosts line is listed first in /etc/host.conf. Then, put an entry in /etc/hosts for the local machine. If there is no local network, change the localhost line:
+
+127.0.0.1        foo.example.com foo localhost
+Otherwise, add another entry for the host. Consult the relevant manual pages for more details.
+
+When finished, verify that this command is successful: ping -c1 `hostname`.
+
+14.3.
+
+Why will ppp(8) not dial in -auto mode?
+
+First, check that a default route exists. This command should display two entries:
+
+Destination        Gateway            Flags     Refs     Use     Netif Expire
+default            10.0.0.2           UGSc        0        0      tun0
+10.0.0.2           10.0.0.1           UH          0        0      tun0
+If a default route is not listed, make sure that the HISADDR line has been added to /etc/ppp/ppp.conf.
+
+Another reason for the default route line being missing is that a default route has been added to /etc/rc.conf and this line is missing from /etc/ppp/ppp.conf:
+
+delete ALL
+If this is the case, go back to the Final System Configuration section of the Handbook.
+
+14.4.
+
+What does No route to host mean?
+
+This error is usually because the following section is missing in /etc/ppp/ppp.linkup:
+
+MYADDR:
+  delete ALL
+  add 0 0 HISADDR
+This is only necessary for a dynamic IP address or when the address of the default gateway is unknown. When using interactive mode, the following can be typed in after entering packet mode. Packet mode is indicated by the capitalized PPP in the prompt:
+
+delete ALL
+add 0 0 HISADDR
+Refer to the PPP and Dynamic IP addresses section of the Handbook for further details.
+
+14.5.
+
+Why does my connection drop after about 3 minutes?
+
+The default PPP timeout is 3 minutes. This can be adjusted with the following line:
+
+set timeout NNN
+where NNN is the number of seconds of inactivity before the connection is closed. If NNN is zero, the connection is never closed due to a timeout. It is possible to put this command in ppp.conf, or to type it at the prompt in interactive mode. It is also possible to adjust it on the fly while the line is active by connecting to ppp's server socket using telnet(1) or pppctl(8). Refer to the ppp(8) man page for further details.
+
+14.6.
+
+Why does my connection drop under heavy load?
+
+If Link Quality Reporting (LQR) is configured, it is possible that too many LQR packets are lost between the FreeBSD system and the peer. ppp(8) deduces that the line must therefore be bad, and disconnects. LQR is disabled by default and can be enabled with the following line:
+
+enable lqr
+14.7.
+
+Why does my connection drop after a random amount of time?
+
+Sometimes, on a noisy phone line or even on a line with call waiting enabled, the modem may hang up because it incorrectly thinks that it lost carrier.
+
+There is a setting on most modems for determining how tolerant it should be to temporary losses of carrier. Refer to the modem manual for details.
+
+14.8.
+
+Why does my connection hang after a random amount of time?
+
+Many people experience hung connections with no apparent explanation. The first thing to establish is which side of the link is hung.
+
+When using an external modem, try using ping(8) to see if the TD light is flashing when data is transmitted. If it flashes but the RD light does not, the problem is with the remote end. If TD does not flash, the problem is local. With an internal modem, use the set server command in ppp.conf. When the hang occurs, connect to ppp(8) using pppctl(8). If the network connection suddenly revives due to the activity on the diagnostic socket, or if it will not connect but the set socket command succeeded at startup time, the problem is local. If it can connect but things are still hung, enable local logging with set log local async and use ping(8) from another window or terminal to make use of the link. The async logging will show the data being transmitted and received on the link. If data is going out and not coming back, the problem is remote.
+
+Having established whether the problem is local or remote, there are now two possibilities:
+
+If the problem is remote, read on entry Q: 14.9.
+
+If the problem is local, read on entry Q: 14.10.
+
+14.9.
+
+The remote end is not responding. What can I do?
+
+There is very little that can be done about this. Many ISPs will refuse to help users not running a Microsoft® OS. Add enable lqr to /etc/ppp/ppp.conf, allowing ppp(8) to detect the remote failure and hang up. This detection is relatively slow and therefore not that useful.
+
+First, try disabling all local compression by adding the following to the configuration:
+
+disable pred1 deflate deflate24 protocomp acfcomp shortseq vj
+deny pred1 deflate deflate24 protocomp acfcomp shortseq vj
+Then reconnect to ensure that this makes no difference. If things improve or if the problem is solved completely, determine which setting makes the difference through trial and error. This is good information for the ISP, although it may make it apparent that it is not a Microsoft® system.
+
+Before contacting the ISP, enable async logging locally and wait until the connection hangs again. This may use up quite a bit of disk space. The last data read from the port may be of interest. It is usually ASCII data, and may even describe the problem (Memory fault, Core dumped).
+
+If the ISP is helpful, they should be able to enable logging on their end, then when the next link drop occurs, they may be able to tell why their side is having a problem.
+
+14.10.
+
+ppp(8) has hung. What can I do?
+
+In this case, rebuild ppp(8) with debugging information, and then use gdb(1) to grab a stack trace from the ppp process that is stuck. To rebuild the ppp utility with debugging information, type:
+
+# cd /usr/src/usr.sbin/ppp
+# env DEBUG_FLAGS='-g' make clean
+# env DEBUG_FLAGS='-g' make install
+Then, restart ppp and wait until it hangs again. When the debug build of ppp hangs, start gdb on the stuck process by typing:
+
+# gdb ppp `pgrep ppp`
+At the gdb prompt, use the bt or where commands to get a stack trace. Save the output of the gdb session, and “detach” from the running process by typing quit.
+
+14.11.
+
+I keep seeing errors about magic being the same. What does it mean?
+
+Occasionally, just after connecting, there may be messages in the log that say Magic is same. Sometimes, these messages are harmless, and sometimes one side or the other exits. Most PPP implementations cannot survive this problem, and even if the link seems to come up, there will be repeated configure requests and configure acknowledgments in the log file until ppp(8) eventually gives up and closes the connection.
+
+This normally happens on server machines with slow disks that are spawning a getty(8) on the port, and executing ppp(8) from a login script or program after login. There were reports of it happening consistently when using slirp. The reason is that in the time taken between getty(8) exiting and ppp(8) starting, the client-side ppp(8) starts sending Line Control Protocol (LCP) packets. Because ECHO is still switched on for the port on the server, the client ppp(8) sees these packets “reflect” back.
+
+One part of the LCP negotiation is to establish a magic number for each side of the link so that “reflections” can be detected. The protocol says that when the peer tries to negotiate the same magic number, a NAK should be sent and a new magic number should be chosen. During the period that the server port has ECHO turned on, the client ppp(8) sends LCP packets, sees the same magic in the reflected packet and NAKs it. It also sees the NAK reflect (which also means ppp(8) must change its magic). This produces a potentially enormous number of magic number changes, all of which are happily piling into the server's tty buffer. As soon as ppp(8) starts on the server, it is flooded with magic number changes and almost immediately decides it has tried enough to negotiate LCP and gives up. Meanwhile, the client, who no longer sees the reflections, becomes happy just in time to see a hangup from the server.
+
+This can be avoided by allowing the peer to start negotiating with the following line in ppp.conf:
+
+set openmode passive
+This tells ppp(8) to wait for the server to initiate LCP negotiations. Some servers however may never initiate negotiations. In this case, try something like:
+
+set openmode active 3
+This tells ppp(8) to be passive for 3 seconds, and then to start sending LCP requests. If the peer starts sending requests during this period, ppp(8) will immediately respond rather than waiting for the full 3 second period.
+
+14.12.
+
+LCP negotiations continue until the connection is closed. What is wrong?
+
+There is currently an implementation mis-feature in ppp(8) where it does not associate LCP, CCP & IPCP responses with their original requests. As a result, if one PPP implementation is more than 6 seconds slower than the other side, the other side will send two additional LCP configuration requests. This is fatal.
+
+Consider two implementations, A and B. A starts sending LCP requests immediately after connecting and B takes 7 seconds to start. When B starts, A has sent 3 LCP REQs. We are assuming the line has ECHO switched off, otherwise we would see magic number problems as described in the previous section. B sends a REQ, then an ACK to the first of A's REQs. This results in A entering the OPENED state and sending and ACK (the first) back to B. In the meantime, B sends back two more ACKs in response to the two additional REQs sent by A before B started up. B then receives the first ACK from A and enters the OPENED state. A receives the second ACK from B and goes back to the REQ-SENT state, sending another (forth) REQ as per the RFC. It then receives the third ACK and enters the OPENED state. In the meantime, B receives the forth REQ from A, resulting in it reverting to the ACK-SENT state and sending another (second) REQ and (forth) ACK as per the RFC. A gets the REQ, goes into REQ-SENT and sends another REQ. It immediately receives the following ACK and enters OPENED.
+
+This goes on until one side figures out that they are getting nowhere and gives up.
+
+The best way to avoid this is to configure one side to be passive — that is, make one side wait for the other to start negotiating. This can be done with the following command:
+
+set openmode passive
+Care should be taken with this option. This command can also be used to limit the amount of time that ppp(8) waits for the peer to begin negotiations:
+
+set stopped N
+Alternatively, the following command (where N is the number of seconds to wait before starting negotiations) can be used:
+
+set openmode active N
+Check the manual page for details.
+
+14.13.
+
+Why does ppp(8) lock up when I shell out to test it?
+
+When using shell or !, ppp(8) executes a shell or the passed arguments. The ppp program will wait for the command to complete before continuing. Any attempt to use the PPP link while running the command will appear as a frozen link. This is because ppp(8) is waiting for the command to complete.
+
+To execute commands like this, use !bg instead. This will execute the given command in the background, and ppp(8) can continue to service the link.
+
+14.14.
+
+Why does ppp(8) over a null-modem cable never exit?
+
+There is no way for ppp(8) to automatically determine that a direct connection has been dropped. This is due to the lines that are used in a null-modem serial cable. When using this sort of connection, LQR should always be enabled with the following line:
+
+enable lqr
+LQR is accepted by default if negotiated by the peer.
+
+14.15.
+
+Why does ppp(8) dial for no reason in -auto mode?
+
+If ppp(8) is dialing unexpectedly, determine the cause, and set up dial filters to prevent such dialing.
+
+To determine the cause, use the following line:
+
+set log +tcp/ip
+This will log all traffic through the connection. The next time the line comes up unexpectedly, the reason will be logged with a convenient timestamp next to it.
+
+Next, disable dialing under these circumstances. Usually, this sort of problem arises due to DNS lookups. To prevent DNS lookups from establishing a connection (this will not prevent ppp(8) from passing the packets through an established connection), use the following:
+
+set dfilter 1 deny udp src eq 53
+set dfilter 2 deny udp dst eq 53
+set dfilter 3 permit 0/0 0/0
+This is not always suitable, as it will effectively break demand-dial capabilities. Most programs will need a DNS lookup before doing any other network related things.
+
+In the DNS case, try to determine what is actually trying to resolve a host name. A lot of the time, Sendmail is the culprit. Make sure to configure Sendmail not to do any DNS lookups in its configuration file. See the section on using email with a dialup connection in the FreeBSD Handbook for details. You may also want to add the following line to .mc:
+
+define(`confDELIVERY_MODE', `d')dnl
+This will make Sendmail queue everything until the queue is run, usually, every 30 minutes, or until a sendmail -q is done, perhaps from /etc/ppp/ppp.linkup.
+
+14.16.
+
+What do these CCP errors mean?
+
+I keep seeing the following errors in my log file:
+
+CCP: CcpSendConfigReq
+CCP: Received Terminate Ack (1) state = Req-Sent (6)
+This is because ppp(8) is trying to negotiate Predictor1 compression, but the peer does not want to negotiate any compression at all. The messages are harmless, but can be silenced by disabling the compression:
+
+disable pred1
+14.17.
+
+Why does ppp(8) not log my connection speed?
+
+To log all lines of the modem conversation, enable the following:
+
+set log +connect
+This will make ppp(8) log everything up until the last requested “expect” string.
+
+To see the connect speed when using PAP or CHAP, make sure to configure ppp(8) to expect the whole CONNECT line, using something like this:
+
+set dial "ABORT BUSY ABORT NO\\sCARRIER TIMEOUT 4 \
+  \"\" ATZ OK-ATZ-OK ATDT\\T TIMEOUT 60 CONNECT \\c \\n"
+This gets the CONNECT, sends nothing, then expects a line-feed, forcing ppp(8) to read the whole CONNECT response.
+
+14.18.
+
+Why does ppp(8) ignore the \ character in my chat script?
+
+The ppp utility parses each line in its configuration files so that it can interpret strings such as set phone "123 456 789" correctly and realize that the number is actually only one argument. To specify a " character, escape it using a backslash (\).
+
+When the chat interpreter parses each argument, it re-interprets the argument to find any special escape sequences such as \P or \T. As a result of this double-parsing, remember to use the correct number of escapes.
+
+To actually send a \ character, do something like:
+
+set dial "\"\" ATZ OK-ATZ-OK AT\\\\X OK"
+It will result in the following sequence:
+
+ATZ
+OK
+AT\X
+OK
+Or:
+
+set phone 1234567
+set dial "\"\" ATZ OK ATDT\\T"
+It will result in the following sequence:
+
+ATZ
+OK
+ATDT1234567
+14.19.
+
+What are FCS errors?
+
+FCS stands for Frame Check Sequence. Each PPP packet has a checksum attached to ensure that the data being received is the data being sent. If the FCS of an incoming packet is incorrect, the packet is dropped and the HDLC FCS count is increased. The HDLC error values can be displayed using the show hdlc command.
+
+If the link is bad or if the serial driver is dropping packets, it will produce the occasional FCS error. This is not usually worth worrying about although it does slow down the compression protocols substantially.
+
+If the link freezes as soon as it connects and produces a large number of FCS errors, make sure the modem is not using software flow control (XON/XOFF). If the link must use software flow control, use set accmap 0x000a0000 to tell ppp(8) to escape the ^Q and ^S characters.
+
+Another reason for too many FCS errors may be that the remote end has stopped talking PPP. In this case, enable async logging to determine if the incoming data is actually a login or shell prompt. If it is a shell prompt at the remote end, it is possible to terminate ppp(8) without dropping the line by using close lcp followed by term) to reconnect to the shell on the remote machine.
+
+If nothing in the log file indicates why the link was terminated, ask the remote administrator or ISP why the session was terminated.
+
+14.20.
+
+None of this helps — I am desperate! What can I do?
+
+If all else fails, send the details of the error, the configuration files, how ppp(8) is being started, the relevant parts of the log file, and the output of netstat -rn, before and after connecting, to the FreeBSD general questions mailing list.
