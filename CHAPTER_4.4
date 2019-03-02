@@ -1,0 +1,48 @@
+4.4. Keyboards and Mice
+4.4.1. Is it possible to use a mouse outside the X Window system?
+4.4.2. How do I cut and paste text with a mouse in the text console?
+4.4.3. My mouse has a fancy wheel and buttons. Can I use them in FreeBSD?
+4.4.4. How do I use my delete key in sh and csh?
+4.4.1.
+
+Is it possible to use a mouse outside the X Window system?
+
+The default console driver, syscons(4), provides the ability to use a mouse pointer in text consoles to cut & paste text. Run the mouse daemon, moused(8), and turn on the mouse pointer in the virtual console:
+
+# moused -p /dev/xxxx -t yyyy
+# vidcontrol -m on
+Where xxxx is the mouse device name and yyyy is a protocol type for the mouse. The mouse daemon can automatically determine the protocol type of most mice, except old serial mice. Specify the auto protocol to invoke automatic detection. If automatic detection does not work, see the moused(8) manual page for a list of supported protocol types.
+
+For a PS/2 mouse, add moused_enable="YES" to /etc/rc.conf to start the mouse daemon at boot time. Additionally, to use the mouse daemon on all virtual terminals instead of just the console, add allscreens_flags="-m on" to /etc/rc.conf.
+
+When the mouse daemon is running, access to the mouse must be coordinated between the mouse daemon and other programs such as X Windows. Refer to the FAQ Why does my mouse not work with X? for more details on this issue.
+
+4.4.2.
+
+How do I cut and paste text with a mouse in the text console?
+
+It is not possible to remove data using the mouse. However, it is possible to copy and paste. Once the mouse daemon is running as described in the previous question, hold down button 1 (left button) and move the mouse to select a region of text. Then, press button 2 (middle button) to paste it at the text cursor. Pressing button 3 (right button) will “extend” the selected region of text.
+
+If the mouse does not have a middle button, it is possible to emulate one or remap buttons using mouse daemon options. See the moused(8) manual page for details.
+
+4.4.3.
+
+My mouse has a fancy wheel and buttons. Can I use them in FreeBSD?
+
+The answer is, unfortunately, “It depends”. These mice with additional features require specialized driver in most cases. Unless the mouse device driver or the user program has specific support for the mouse, it will act just like a standard two, or three button mouse.
+
+For the possible usage of wheels in the X Window environment, refer to that section.
+
+4.4.4.
+
+How do I use my delete key in sh and csh?
+
+For the Bourne Shell, add the following lines to ~/.shrc. See sh(1) and editrc(5).
+
+bind ^? ed-delete-next-char # for console
+bind ^[[3~ ed-delete-next-char # for xterm
+For the C Shell, add the following lines to ~/.cshrc. See csh(1).
+
+bindkey ^? delete-char # for console
+bindkey ^[[3~ delete-char # for xterm
+For more information, see this page.
