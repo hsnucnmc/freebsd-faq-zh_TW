@@ -1,0 +1,113 @@
+Chapter 17. The FreeBSD Funnies
+17.1. How cool is FreeBSD?
+17.2. Who is scratching in my memory banks??
+17.3. How many FreeBSD hackers does it take to change a lightbulb?
+17.4. Where does data written to /dev/null go?
+17.5. My colleague sits at the computer too much, how can I prank her?
+17.1.
+
+How cool is FreeBSD?
+
+Q. Has anyone done any temperature testing while running FreeBSD? I know Linux® runs cooler than DOS, but have never seen a mention of FreeBSD. It seems to run really hot.
+
+A. No, but we have done numerous taste tests on blindfolded volunteers who have also had 250 micrograms of LSD-25 administered beforehand. 35% of the volunteers said that FreeBSD tasted sort of orange, whereas Linux® tasted like purple haze. Neither group mentioned any significant variances in temperature. We eventually had to throw the results of this survey out entirely anyway when we found that too many volunteers were wandering out of the room during the tests, thus skewing the results. We think most of the volunteers are at Apple now, working on their new “scratch and sniff” GUI. It is a funny old business we are in!
+
+Seriously, FreeBSD uses the HLT (halt) instruction when the system is idle thus lowering its energy consumption and therefore the heat it generates. Also if you have ACPI (Advanced Configuration and Power Interface) configured, then FreeBSD can also put the CPU into a low power mode.
+
+17.2.
+
+Who is scratching in my memory banks??
+
+Q. Is there anything “odd” that FreeBSD does when compiling the kernel which would cause the memory to make a scratchy sound? When compiling (and for a brief moment after recognizing the floppy drive upon startup, as well), a strange scratchy sound emanates from what appears to be the memory banks.
+
+A. Yes! You will see frequent references to “daemons” in the BSD documentation, and what most people do not know is that this refers to genuine, non-corporeal entities that now possess your computer. The scratchy sound coming from your memory is actually high-pitched whispering exchanged among the daemons as they best decide how to deal with various system administration tasks.
+
+If the noise gets to you, a good fdisk /mbr from DOS will get rid of them, but do not be surprised if they react adversely and try to stop you. In fact, if at any point during the exercise you hear the satanic voice of Bill Gates coming from the built-in speaker, take off running and do not ever look back! Freed from the counterbalancing influence of the BSD daemons, the twin demons of DOS and Windows® are often able to re-assert total control over your machine to the eternal damnation of your soul. Now that you know, given a choice you would probably prefer to get used to the scratchy noises, no?
+
+17.3.
+
+How many FreeBSD hackers does it take to change a lightbulb?
+
+One thousand, one hundred and sixty-nine:
+
+Twenty-three to complain to -CURRENT about the lights being out;
+
+Four to claim that it is a configuration problem, and that such matters really belong on -questions;
+
+Three to submit PRs about it, one of which is misfiled under doc and consists only of “it's dark”;
+
+One to commit an untested lightbulb which breaks buildworld, then back it out five minutes later;
+
+Eight to flame the PR originators for not including patches in their PRs;
+
+Five to complain about buildworld being broken;
+
+Thirty-one to answer that it works for them, and they must have updated at a bad time;
+
+One to post a patch for a new lightbulb to -hackers;
+
+One to complain that he had patches for this three years ago, but when he sent them to -CURRENT they were just ignored, and he has had bad experiences with the PR system; besides, the proposed new lightbulb is non-reflexive;
+
+Thirty-seven to scream that lightbulbs do not belong in the base system, that committers have no right to do things like this without consulting the Community, and WHAT IS -CORE DOING ABOUT IT!?
+
+Two hundred to complain about the color of the bicycle shed;
+
+Three to point out that the patch breaks style(9);
+
+Seventeen to complain that the proposed new lightbulb is under GPL;
+
+Five hundred and eighty-six to engage in a flame war about the comparative advantages of the GPL, the BSD license, the MIT license, the NPL, and the personal hygiene of unnamed FSF founders;
+
+Seven to move various portions of the thread to -chat and -advocacy;
+
+One to commit the suggested lightbulb, even though it shines dimmer than the old one;
+
+Two to back it out with a furious flame of a commit message, arguing that FreeBSD is better off in the dark than with a dim lightbulb;
+
+Forty-six to argue vociferously about the backing out of the dim lightbulb and demanding a statement from -core;
+
+Eleven to request a smaller lightbulb so it will fit their Tamagotchi if we ever decide to port FreeBSD to that platform;
+
+Seventy-three to complain about the SNR on -hackers and -chat and unsubscribe in protest;
+
+Thirteen to post “unsubscribe”, “How do I unsubscribe?”, or “Please remove me from the list”, followed by the usual footer;
+
+One to commit a working lightbulb while everybody is too busy flaming everybody else to notice;
+
+Thirty-one to point out that the new lightbulb would shine 0.364% brighter if compiled with TenDRA (although it will have to be reshaped into a cube), and that FreeBSD should therefore switch to TenDRA instead of GCC;
+
+One to complain that the new lightbulb lacks fairings;
+
+Nine (including the PR originators) to ask “what is MFC?”;
+
+Fifty-seven to complain about the lights being out two weeks after the bulb has been changed.
+
+Nik Clayton <nik@FreeBSD.org> adds:
+
+I was laughing quite hard at this.
+
+And then I thought, “Hang on, shouldn't there be '1 to document it.' in that list somewhere?”
+
+And then I was enlightened :-)
+
+Thomas Abthorpe <tabthorpe@FreeBSD.org> says: “None, real FreeBSD hackers are not afraid of the dark!”
+
+17.4.
+
+Where does data written to /dev/null go?
+
+It goes into a special data sink in the CPU where it is converted to heat which is vented through the heatsink / fan assembly. This is why CPU cooling is increasingly important; as people get used to faster processors, they become careless with their data and more and more of it ends up in /dev/null, overheating their CPUs. If you delete /dev/null (which effectively disables the CPU data sink) your CPU may run cooler but your system will quickly become constipated with all that excess data and start to behave erratically. If you have a fast network connection you can cool down your CPU by reading data out of /dev/random and sending it off somewhere; however you run the risk of overheating your network connection and / or angering your ISP, as most of the data will end up getting converted to heat by their equipment, but they generally have good cooling, so if you do not overdo it you should be OK.
+
+Paul Robinson adds:
+
+There are other methods. As every good sysadmin knows, it is part of standard practice to send data to the screen of interesting variety to keep all the pixies that make up your picture happy. Screen pixies (commonly mis-typed or re-named as “pixels”) are categorized by the type of hat they wear (red, green or blue) and will hide or appear (thereby showing the color of their hat) whenever they receive a little piece of food. Video cards turn data into pixie-food, and then send them to the pixies — the more expensive the card, the better the food, so the better behaved the pixies are. They also need constant stimulation — this is why screen savers exist.
+
+To take your suggestions further, you could just throw the random data to console, thereby letting the pixies consume it. This causes no heat to be produced at all, keeps the pixies happy and gets rid of your data quite quickly, even if it does make things look a bit messy on your screen.
+
+Incidentally, as an ex-admin of a large ISP who experienced many problems attempting to maintain a stable temperature in a server room, I would strongly discourage people sending the data they do not want out to the network. The fairies who do the packet switching and routing get annoyed by it as well.
+
+17.5.
+
+My colleague sits at the computer too much, how can I prank her?
+
+Install games/sl and wait for her to mistype sl for ls.
