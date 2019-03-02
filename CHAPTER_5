@@ -1,0 +1,184 @@
+Chapter 5. Troubleshooting
+5.1. Why is FreeBSD finding the wrong amount of memory on i386™ hardware?
+5.2. Why do my programs occasionally die with Signal 11 errors?
+5.3. My system crashes with either Fatal trap 12: page fault in kernel mode, or panic:, and spits out a bunch of information. What should I do?
+5.4. What is the meaning of the error maxproc limit exceeded by uid %i, please see tuning(7) and login.conf(5)?
+5.5. Why do full screen applications on remote machines misbehave?
+5.6. Why does it take so long to connect to my computer via ssh or telnet?
+5.7. Why does file: table is full show up repeatedly in dmesg(8)?
+5.8. Why does the clock on my computer keep incorrect time?
+5.9. What does the error swap_pager: indefinite wait buffer: mean?
+5.10. What is a lock order reversal?
+5.11. What does Called ... with the following non-sleepable locks held mean?
+5.12. Why does buildworld/installworld die with the message touch: not found?
+5.1.
+
+Why is FreeBSD finding the wrong amount of memory on i386™ hardware?
+
+The most likely reason is the difference between physical memory addresses and virtual addresses.
+
+The convention for most PC hardware is to use the memory area between 3.5 GB and 4 GB for a special purpose (usually for PCI). This address space is used to access PCI hardware. As a result real, physical memory cannot be accessed by that address space.
+
+What happens to the memory that should appear in that location is hardware dependent. Unfortunately, some hardware does nothing and the ability to use that last 500 MB of RAM is entirely lost.
+
+Luckily, most hardware remaps the memory to a higher location so that it can still be used. However, this can cause some confusion when watching the boot messages.
+
+On a 32-bit version of FreeBSD, the memory appears lost, since it will be remapped above 4 GB, which a 32-bit kernel is unable to access. In this case, the solution is to build a PAE enabled kernel. See the entry on memory limits for more information.
+
+On a 64-bit version of FreeBSD, or when running a PAE-enabled kernel, FreeBSD will correctly detect and remap the memory so it is usable. During boot, however, it may seem as if FreeBSD is detecting more memory than the system really has, due to the described remapping. This is normal and the available memory will be corrected as the boot process completes.
+
+5.2.
+
+Why do my programs occasionally die with Signal 11 errors?
+
+Signal 11 errors are caused when a process has attempted to access memory which the operating system has not granted it access to. If something like this is happening at seemingly random intervals, start investigating the cause.
+
+These problems can usually be attributed to either:
+
+If the problem is occurring only in a specific custom application, it is probably a bug in the code.
+
+If it is a problem with part of the base FreeBSD system, it may also be buggy code, but more often than not these problems are found and fixed long before us general FAQ readers get to use these bits of code (that is what -CURRENT is for).
+
+It is probably not a FreeBSD bug if the problem occurs compiling a program, but the activity that the compiler is carrying out changes each time.
+
+For example, if make buildworld fails while trying to compile ls.c into ls.o and, when run again, it fails in the same place, this is a broken build. Try updating source and try again. If the compile fails elsewhere, it is almost certainly due to hardware.
+
+In the first case, use a debugger such as gdb(1) to find the point in the program which is attempting to access a bogus address and fix it.
+
+In the second case, verify which piece of hardware is at fault.
+
+Common causes of this include:
+
+The hard disks might be overheating: Check that the fans are still working, as the disk and other hardware might be overheating.
+
+The processor running is overheating: This might be because the processor has been overclocked, or the fan on the processor might have died. In either case, ensure that the hardware is running at what it is specified to run at, at least while trying to solve this problem. If it is not, clock it back to the default settings.)
+
+Regarding overclocking, it is far cheaper to have a slow system than a fried system that needs replacing! Also the community is not sympathetic to problems on overclocked systems.
+
+Dodgy memory: if multiple memory SIMMS/DIMMS are installed, pull them all out and try running the machine with each SIMM or DIMM individually to narrow the problem down to either the problematic DIMM/SIMM or perhaps even a combination.
+
+Over-optimistic motherboard settings: the BIOS settings, and some motherboard jumpers, provide options to set various timings. The defaults are often sufficient, but sometimes setting the wait states on RAM too low, or setting the “RAM Speed: Turbo” option will cause strange behavior. A possible idea is to set to BIOS defaults, after noting the current settings first.
+
+Unclean or insufficient power to the motherboard. Remove any unused I/O boards, hard disks, or CD-ROMs, or disconnect the power cable from them, to see if the power supply can manage a smaller load. Or try another power supply, preferably one with a little more power. For instance, if the current power supply is rated at 250 Watts, try one rated at 300 Watts.
+
+Read the section on Signal 11 for a further explanation and a discussion on how memory testing software or hardware can still pass faulty memory. There is an extensive FAQ on this at the SIG11 problem FAQ.
+
+Finally, if none of this has helped, it is possibly a bug in FreeBSD. Follow these instructions to send a problem report.
+
+5.3.
+
+My system crashes with either Fatal trap 12: page fault in kernel mode, or panic:, and spits out a bunch of information. What should I do?
+
+The FreeBSD developers are interested in these errors, but need more information than just the error message. Copy the full crash message. Then consult the FAQ section on kernel panics, build a debugging kernel, and get a backtrace. This might sound difficult, but does not require any programming skills. Just follow the instructions.
+
+5.4.
+
+What is the meaning of the error maxproc limit exceeded by uid %i, please see tuning(7) and login.conf(5)?
+
+The FreeBSD kernel will only allow a certain number of processes to exist at one time. The number is based on the kern.maxusers sysctl(8) variable. kern.maxusers also affects various other in-kernel limits, such as network buffers. If the machine is heavily loaded, increase kern.maxusers. This will increase these other system limits in addition to the maximum number of processes.
+
+To adjust the kern.maxusers value, see the File/Process Limits section of the Handbook. While that section refers to open files, the same limits apply to processes.
+
+If the machine is lightly loaded but running a very large number of processes, adjust the kern.maxproc tunable by defining it in /boot/loader.conf. The tunable will not get adjusted until the system is rebooted. For more information about tuning tunables, see loader.conf(5). If these processes are being run by a single user, adjust kern.maxprocperuid to be one less than the new kern.maxproc value. It must be at least one less because one system program, init(8), must always be running.
+
+5.5.
+
+Why do full screen applications on remote machines misbehave?
+
+The remote machine may be setting the terminal type to something other than xterm which is required by the FreeBSD console. Alternatively the kernel may have the wrong values for the width and height of the terminal.
+
+Check the value of the TERM environment variable is xterm. If the remote machine does not support that try vt100.
+
+Run stty -a to check what the kernel thinks the terminal dimensions are. If they are incorrect, they can be changed by running stty rows RR cols CC.
+
+Alternatively, if the client machine has x11/xterm installed, then running resize will query the terminal for the correct dimensions and set them.
+
+5.6.
+
+Why does it take so long to connect to my computer via ssh or telnet?
+
+The symptom: there is a long delay between the time the TCP connection is established and the time when the client software asks for a password (or, in telnet(1)'s case, when a login prompt appears).
+
+The problem: more likely than not, the delay is caused by the server software trying to resolve the client's IP address into a hostname. Many servers, including the Telnet and SSH servers that come with FreeBSD, do this to store the hostname in a log file for future reference by the administrator.
+
+The remedy: if the problem occurs whenever connecting the client computer to any server, the problem is with the client. If the problem only occurs when someone connects to the server computer, the problem is with the server.
+
+If the problem is with the client, the only remedy is to fix the DNS so the server can resolve it. If this is on a local network, consider it a server problem and keep reading. If this is on the Internet, contact your ISP.
+
+If the problem is with the server on a local network, configure the server to resolve address-to-hostname queries for the local address range. See hosts(5) and named(8) for more information. If this is on the Internet, the problem may be that the local server's resolver is not functioning correctly. To check, try to look up another host such as www.yahoo.com. If it does not work, that is the problem.
+
+Following a fresh install of FreeBSD, it is also possible that domain and name server information is missing from /etc/resolv.conf. This will often cause a delay in SSH, as the option UseDNS is set to yes by default in /etc/ssh/sshd_config. If this is causing the problem, either fill in the missing information in /etc/resolv.conf or set UseDNS to no in sshd_config as a temporary workaround.
+
+5.7.
+
+Why does file: table is full show up repeatedly in dmesg(8)?
+
+This error message indicates that the number of available file descriptors have been exhausted on the system. Refer to the kern.maxfiles section of the Tuning Kernel Limits section of the Handbook for a discussion and solution.
+
+5.8.
+
+Why does the clock on my computer keep incorrect time?
+
+The computer has two or more clocks, and FreeBSD has chosen to use the wrong one.
+
+Run dmesg(8), and check for lines that contain Timecounter. The one with the highest quality value that FreeBSD chose.
+
+# dmesg | grep Timecounter
+Timecounter "i8254" frequency 1193182 Hz quality 0
+Timecounter "ACPI-fast" frequency 3579545 Hz quality 1000
+Timecounter "TSC" frequency 2998570050 Hz quality 800
+Timecounters tick every 1.000 msec
+Confirm this by checking the kern.timecounter.hardware sysctl(3).
+
+# sysctl kern.timecounter.hardware
+kern.timecounter.hardware: ACPI-fast
+It may be a broken ACPI timer. The simplest solution is to disable the ACPI timer in /boot/loader.conf:
+
+debug.acpi.disabled="timer"
+Or the BIOS may modify the TSC clock—perhaps to change the speed of the processor when running from batteries, or going into a power saving mode, but FreeBSD is unaware of these adjustments, and appears to gain or lose time.
+
+In this example, the i8254 clock is also available, and can be selected by writing its name to the kern.timecounter.hardware sysctl(3).
+
+# sysctl kern.timecounter.hardware=i8254
+kern.timecounter.hardware: TSC -> i8254
+The computer should now start keeping more accurate time.
+
+To have this change automatically run at boot time, add the following line to /etc/sysctl.conf:
+
+kern.timecounter.hardware=i8254
+5.9.
+
+What does the error swap_pager: indefinite wait buffer: mean?
+
+This means that a process is trying to page memory from disk, and the page attempt has hung trying to access the disk for more than 20 seconds. It might be caused by bad blocks on the disk drive, disk wiring, cables, or any other disk I/O-related hardware. If the drive itself is bad, disk errors will appear in /var/log/messages and in the output of dmesg. Otherwise, check the cables and connections.
+
+5.10.
+
+What is a lock order reversal?
+
+The FreeBSD kernel uses a number of resource locks to arbitrate contention for certain resources. When multiple kernel threads try to obtain multiple resource locks, there's always the potential for a deadlock, where two threads have each obtained one of the locks and blocks forever waiting for the other thread to release one of the other locks. This sort of locking problem can be avoided if all threads obtain the locks in the same order.
+
+A run-time lock diagnostic system called witness(4), enabled in FreeBSD-CURRENT and disabled by default for stable branches and releases, detects the potential for deadlocks due to locking errors, including errors caused by obtaining multiple resource locks with a different order from different parts of the kernel. The witness(4) framework tries to detect this problem as it happens, and reports it by printing a message to the system console about a lock order reversal (often referred to also as LOR).
+
+It is possible to get false positives, as witness(4) is conservative. A true positive report does not mean that a system is dead-locked; instead it should be understood as a warning that a deadlock could have happened here.
+
+Note: Problematic LORs tend to get fixed quickly, so check the FreeBSD-CURRENT mailing list before posting to it.
+5.11.
+
+What does Called ... with the following non-sleepable locks held mean?
+
+This means that a function that may sleep was called while a mutex (or other unsleepable) lock was held.
+
+The reason this is an error is because mutexes are not intended to be held for long periods of time; they are supposed to only be held to maintain short periods of synchronization. This programming contract allows device drivers to use mutexes to synchronize with the rest of the kernel during interrupts. Interrupts (under FreeBSD) may not sleep. Hence it is imperative that no subsystem in the kernel block for an extended period while holding a mutex.
+
+To catch such errors, assertions may be added to the kernel that interact with the witness(4) subsystem to emit a warning or fatal error (depending on the system configuration) when a potentially blocking call is made while holding a mutex.
+
+In summary, such warnings are non-fatal, however with unfortunate timing they could cause undesirable effects ranging from a minor blip in the system's responsiveness to a complete system lockup.
+
+For additional information about locking in FreeBSD see locking(9).
+
+5.12.
+
+Why does buildworld/installworld die with the message touch: not found?
+
+This error does not mean that the touch(1) utility is missing. The error is instead probably due to the dates of the files being set sometime in the future. If the CMOS clock is set to local time, run adjkerntz -i to adjust the kernel clock when booting into single-user mode.
