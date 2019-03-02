@@ -1,0 +1,124 @@
+Chapter 3. Installation
+Nik Clayton
+3.1. Which platform should I download? I have a 64 bit capable Intel® CPU, but I only see amd64.
+3.2. Which file do I download to get FreeBSD?
+3.3. What do I do if the install image does not boot?
+3.4. Where are the instructions for installing FreeBSD?
+3.5. What are the minimum requirements to run FreeBSD?
+3.6. How can I make my own custom release or install disk?
+3.7. Can Windows® co-exist with FreeBSD?
+3.8. Another operating system destroyed my Boot Manager. How do I get it back?
+3.9. Do I need to install the source?
+3.10. Do I need to build a kernel?
+3.11. Should I use DES, Blowfish, or MD5 passwords and how do I specify which form my users receive?
+3.12. What are the limits for FFS file systems?
+3.13. Why do I get an error message, readin failed after compiling and booting a new kernel?
+3.14. Is there a tool to perform post-installation configuration tasks?
+3.1.
+
+Which platform should I download? I have a 64 bit capable Intel® CPU, but I only see amd64.
+
+amd64 is the term FreeBSD uses for 64-bit compatible x86 architectures (also known as "x86-64" or "x64"). Most modern computers should use amd64. Older hardware should use i386. When installing on a non-x86-compatible architecture, select the platform which best matches the hardware.
+
+3.2.
+
+Which file do I download to get FreeBSD?
+
+On the Getting FreeBSD page, select [iso] next to the architecture that matches the hardware.
+
+Any of the following can be used:
+
+file	description
+disc1.iso	Contains enough to install FreeBSD and a minimal set of packages.
+dvd1.iso	Similar to disc1.iso but with additional packages.
+memstick.img	A bootable image sufficient for writing to a USB stick.
+bootonly.iso	A minimal image that requires network access during installation to completely install FreeBSD.
+Full instructions on this procedure and a little bit more about installation issues in general can be found in the Handbook entry on installing FreeBSD.
+
+3.3.
+
+What do I do if the install image does not boot?
+
+This can be caused by not downloading the image in binary mode when using FTP.
+
+Some FTP clients default their transfer mode to ascii and attempt to change any end-of-line characters received to match the conventions used by the client's system. This will almost invariably corrupt the boot image. Check the SHA-256 checksum of the downloaded boot image: if it is not exactly that on the server, then the download process is suspect.
+
+When using a command line FTP client, type binary at the FTP command prompt after getting connected to the server and before starting the download of the image.
+
+3.4.
+
+Where are the instructions for installing FreeBSD?
+
+Installation instructions can be found at Handbook entry on installing FreeBSD.
+
+3.5.
+
+What are the minimum requirements to run FreeBSD?
+
+FreeBSD requires a 486 or better PC, 64 MB or more of RAM, and at least 1.1 GB of hard disk space.
+
+3.6.
+
+How can I make my own custom release or install disk?
+
+Customized FreeBSD installation media can be created by building a custom release. Follow the instructions in the Release Engineering article.
+
+3.7.
+
+Can Windows® co-exist with FreeBSD?
+
+If Windows® is installed first, then yes. FreeBSD's boot manager will then manage to boot Windows® and FreeBSD. If Windows® is installed afterwards, it will overwrite the boot manager. If that happens, see the next section.
+
+3.8.
+
+Another operating system destroyed my Boot Manager. How do I get it back?
+
+This depends upon the boot manager. The FreeBSD boot selection menu can be reinstalled using boot0cfg(8). For example, to restore the boot menu onto the disk ada0:
+
+# boot0cfg -B ada0
+The non-interactive MBR bootloader can be installed using gpart(8):
+
+# gpart bootcode -b /boot/mbr ada0
+For more complex situations, including GPT disks, see gpart(8).
+
+3.9.
+
+Do I need to install the source?
+
+In general, no. There is nothing in the base system which requires the presence of the source to operate. Some ports, like sysutils/lsof, will not build unless the source is installed. In particular, if the port builds a kernel module or directly operates on kernel structures, the source must be installed.
+
+3.10.
+
+Do I need to build a kernel?
+
+Usually not. The supplied GENERIC kernel contains the drivers an ordinary computer will need. freebsd-update(8), the FreeBSD binary upgrade tool, cannot upgrade custom kernels, another reason to stick with the GENERIC kernel when possible. For computers with very limited RAM, such as embedded systems, it may be worthwhile to build a smaller custom kernel containing just the required drivers.
+
+3.11.
+
+Should I use DES, Blowfish, or MD5 passwords and how do I specify which form my users receive?
+
+FreeBSD uses SHA512 by default. DES passwords are still available for backwards compatibility with operating systems that still use the less secure password format. FreeBSD also supports the Blowfish and MD5 password formats. Which password format to use for new passwords is controlled by the passwd_format login capability in /etc/login.conf, which takes values of des, blf (if these are available) or md5. See the login.conf(5) manual page for more information about login capabilities.
+
+3.12.
+
+What are the limits for FFS file systems?
+
+For FFS file systems, the largest file system is practically limited by the amount of memory required to fsck(8) the file system. fsck(8) requires one bit per fragment, which with the default fragment size of 4 KB equates to 32 MB of memory per TB of disk. This does mean that on architectures which limit userland processes to 2 GB (e.g., i386™), the maximum fsck(8)'able filesystem is ~60 TB.
+
+If there was not a fsck(8) memory limit the maximum filesystem size would be 2 ^ 64 (blocks) * 32 KB => 16 Exa * 32 KB => 512 ZettaBytes.
+
+The maximum size of a single FFS file is approximately 2 PB with the default block size of 32 KB. Each 32 KB block can point to 4096 blocks. With triple indirect blocks, the calculation is 32 KB * 12 + 32 KB * 4096 + 32 KB * 4096^2 + 32 KB * 4096^3. Increasing the block size to 64 KB will increase the max file size by a factor of 16.
+
+3.13.
+
+Why do I get an error message, readin failed after compiling and booting a new kernel?
+
+The world and kernel are out of sync. This is not supported. Be sure to use make buildworld and make buildkernel to update the kernel.
+
+Boot the system by specifying the kernel directly at the second stage, pressing any key when the | shows up before loader is started.
+
+3.14.
+
+Is there a tool to perform post-installation configuration tasks?
+
+Yes. bsdconfig provides a nice interface to configure FreeBSD post-installation.
