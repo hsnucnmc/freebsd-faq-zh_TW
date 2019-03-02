@@ -1,0 +1,187 @@
+Chapter 12. Networking
+12.1. Where can I get information on “diskless booting”?
+12.2. Can a FreeBSD box be used as a dedicated network router?
+12.3. Can I connect my Windows® box to the Internet via FreeBSD?
+12.4. Does FreeBSD support PPP?
+12.5. Does FreeBSD support NAT or Masquerading?
+12.6. How can I set up Ethernet aliases?
+12.7. Why can I not NFS-mount from a Linux® box?
+12.8. Why does mountd keep telling me it can't change attributes and that I have a bad exports list on my FreeBSD NFS server?
+12.9. How do I enable IP multicast support?
+12.10. Why do I have to use the FQDN for hosts on my site?
+12.11. Why do I get an error, Permission denied, for all networking operations?
+12.12. Why is my ipfw “fwd” rule to redirect a service to another machine not working?
+12.13. How can I redirect service requests from one machine to another?
+12.14. Where can I get a bandwidth management tool?
+12.15. Why do I get /dev/bpf0: device not configured?
+12.16. How do I mount a disk from a Windows® machine that is on my network, like smbmount in Linux®?
+12.17. What are these messages about: Limiting icmp/open port/closed port response in my log files?
+12.18. What are these arp: unknown hardware address format error messages?
+12.19. Why do I keep seeing messages like: 192.168.0.10 is on fxp1 but got reply from 00:15:17:67:cf:82 on rl0, and how do I disable it?
+12.20. How do I compile an IPv6 only kernel?
+12.1.
+
+Where can I get information on “diskless booting”?
+
+“Diskless booting” means that the FreeBSD box is booted over a network, and reads the necessary files from a server instead of its hard disk. For full details, see the Handbook entry on diskless booting.
+
+12.2.
+
+Can a FreeBSD box be used as a dedicated network router?
+
+Yes. Refer to the Handbook entry on advanced networking, specifically the section on routing and gateways.
+
+12.3.
+
+Can I connect my Windows® box to the Internet via FreeBSD?
+
+Typically, people who ask this question have two PCs at home, one with FreeBSD and one with some version of Windows® the idea is to use the FreeBSD box to connect to the Internet and then be able to access the Internet from the Windows® box through the FreeBSD box. This is really just a special case of the previous question and works perfectly well.
+
+Dialup users must use -nat and set gateway_enable to YES in /etc/rc.conf. For more information, refer to ppp(8) or the Handbook entry on user PPP.
+
+If the connection to the Internet is over Ethernet, use natd(8). A tutorial can be found in the natd section of the Handbook.
+
+12.4.
+
+Does FreeBSD support PPP?
+
+Yes. ppp(8) provides support for both incoming and outgoing connections.
+
+For more information on how to use this, refer to the Handbook chapter on PPP.
+
+12.5.
+
+Does FreeBSD support NAT or Masquerading?
+
+Yes. For instructions on how to use NAT over a PPP connection, see the Handbook entry on PPP. To use NAT over some other sort of network connection, look at the natd section of the Handbook.
+
+12.6.
+
+How can I set up Ethernet aliases?
+
+If the alias is on the same subnet as an address already configured on the interface, add netmask 0xffffffff to this command:
+
+# ifconfig ed0 alias 192.0.2.2 netmask 0xffffffff
+Otherwise, specify the network address and netmask as usual:
+
+# ifconfig ed0 alias 172.16.141.5 netmask 0xffffff00
+More information can be found in the FreeBSD Handbook.
+
+12.7.
+
+Why can I not NFS-mount from a Linux® box?
+
+Some versions of the Linux® NFS code only accept mount requests from a privileged port; try to issue the following command:
+
+# mount -o -P linuxbox:/blah /mnt
+12.8.
+
+Why does mountd keep telling me it can't change attributes and that I have a bad exports list on my FreeBSD NFS server?
+
+The most frequent problem is not understanding the correct format of /etc/exports. Review exports(5) and the NFS entry in the Handbook, especially the section on configuring NFS.
+
+12.9.
+
+How do I enable IP multicast support?
+
+Install the net/mrouted package or port and add mrouted_enable="YES" to /etc/rc.conf start this service at boot time.
+
+12.10.
+
+Why do I have to use the FQDN for hosts on my site?
+
+See the answer in the FreeBSD Handbook.
+
+12.11.
+
+Why do I get an error, Permission denied, for all networking operations?
+
+If the kernel is compiled with the IPFIREWALL option, be aware that the default policy is to deny all packets that are not explicitly allowed.
+
+If the firewall is unintentionally misconfigured, restore network operability by typing the following as root:
+
+# ipfw add 65534 allow all from any to any
+Consider setting firewall_type="open" in /etc/rc.conf.
+
+For further information on configuring this firewall, see the Handbook chapter.
+
+12.12.
+
+Why is my ipfw “fwd” rule to redirect a service to another machine not working?
+
+Possibly because network address translation (NAT) is needed instead of just forwarding packets. A “fwd” rule only forwards packets, it does not actually change the data inside the packet. Consider this rule:
+
+01000 fwd 10.0.0.1 from any to foo 21
+When a packet with a destination address of foo arrives at the machine with this rule, the packet is forwarded to 10.0.0.1, but it still has the destination address of foo. The destination address of the packet is not changed to 10.0.0.1. Most machines would probably drop a packet that they receive with a destination address that is not their own. Therefore, using a “fwd” rule does not often work the way the user expects. This behavior is a feature and not a bug.
+
+See the FAQ about redirecting services, the natd(8) manual, or one of the several port redirecting utilities in the Ports Collection for a correct way to do this.
+
+12.13.
+
+How can I redirect service requests from one machine to another?
+
+FTP and other service requests can be redirected with the sysutils/socket package or port. Replace the entry for the service in /etc/inetd.conf to call socket, as seen in this example for ftpd:
+
+ftp stream tcp nowait nobody /usr/local/bin/socket socket ftp.example.com ftp
+where ftp.example.com and ftp are the host and port to redirect to, respectively.
+
+12.14.
+
+Where can I get a bandwidth management tool?
+
+There are three bandwidth management tools available for FreeBSD. dummynet(4) is integrated into FreeBSD as part of ipfw(4). ALTQ has been integrated into FreeBSD as part of pf(4). Bandwidth Manager from Emerging Technologies is a commercial product.
+
+12.15.
+
+Why do I get /dev/bpf0: device not configured?
+
+The running application requires the Berkeley Packet Filter (bpf(4)), but it was removed from a custom kernel. Add this to the kernel config file and build a new kernel:
+
+device bpf        # Berkeley Packet Filter
+12.16.
+
+How do I mount a disk from a Windows® machine that is on my network, like smbmount in Linux®?
+
+Use the SMBFS toolset. It includes a set of kernel modifications and a set of userland programs. The programs and information are available as mount_smbfs(8) in the base system.
+
+12.17.
+
+What are these messages about: Limiting icmp/open port/closed port response in my log files?
+
+This kernel message indicates that some activity is provoking it to send a large amount of ICMP or TCP reset (RST) responses. ICMP responses are often generated as a result of attempted connections to unused UDP ports. TCP resets are generated as a result of attempted connections to unopened TCP ports. Among others, these are the kinds of activities which may cause these messages:
+
+Brute-force denial of service (DoS) attacks (as opposed to single-packet attacks which exploit a specific vulnerability).
+
+Port scans which attempt to connect to a large number of ports (as opposed to only trying a few well-known ports).
+
+The first number in the message indicates how many packets the kernel would have sent if the limit was not in place, and the second indicates the limit. This limit is controlled using net.inet.icmp.icmplim. This example sets the limit to 300 packets per second:
+
+# sysctl net.inet.icmp.icmplim=300
+To disable these messages without disabling response limiting, use net.inet.icmp.icmplim_output to disable the output:
+
+# sysctl net.inet.icmp.icmplim_output=0
+Finally, to disable response limiting completely, set net.inet.icmp.icmplim to 0. Disabling response limiting is discouraged for the reasons listed above.
+
+12.18.
+
+What are these arp: unknown hardware address format error messages?
+
+This means that some device on the local Ethernet is using a MAC address in a format that FreeBSD does not recognize. This is probably caused by someone experimenting with an Ethernet card somewhere else on the network. This is most commonly seen on cable modem networks. It is harmless, and should not affect the performance of the FreeBSD system.
+
+12.19.
+
+Why do I keep seeing messages like: 192.168.0.10 is on fxp1 but got reply from 00:15:17:67:cf:82 on rl0, and how do I disable it?
+
+Because a packet is coming from outside the network unexpectedly. To disable them, set net.link.ether.inet.log_arp_wrong_iface to 0.
+
+12.20.
+
+How do I compile an IPv6 only kernel?
+
+Configure your kernel with these settings:
+
+include GENERIC
+ident GENERIC-IPV6ONLY
+makeoptions MKMODULESENV+="WITHOUT_INET_SUPPORT="
+nooptions INET
+nodevice gre
