@@ -1,0 +1,139 @@
+Chapter 16. Miscellaneous Questions
+16.1. FreeBSD uses a lot of swap space even when the computer has free memory left. Why?
+16.2. Why does top show very little free memory even when I have very few programs running?
+16.3. Why will chmod not change the permissions on symlinks?
+16.4. Can I run DOS binaries under FreeBSD?
+16.5. What do I need to do to translate a FreeBSD document into my native language?
+16.6. Why does my email to any address at FreeBSD.org bounce?
+16.7. Where can I find a free FreeBSD account?
+16.8. What is the cute little red guy's name?
+16.9. Can I use the BSD daemon image?
+16.10. Do you have any BSD daemon images I could use?
+16.11. I have seen an acronym or other term on the mailing lists and I do not understand what it means. Where should I look?
+16.12. Why should I care what color the bikeshed is?
+16.1.
+
+FreeBSD uses a lot of swap space even when the computer has free memory left. Why?
+
+FreeBSD will proactively move entirely idle, unused pages of main memory into swap in order to make more main memory available for active use. This heavy use of swap is balanced by using the extra free memory for caching.
+
+Note that while FreeBSD is proactive in this regard, it does not arbitrarily decide to swap pages when the system is truly idle. Thus, the system will not be all paged out after leaving it idle overnight.
+
+16.2.
+
+Why does top show very little free memory even when I have very few programs running?
+
+The simple answer is that free memory is wasted memory. Any memory that programs do not actively allocate is used within the FreeBSD kernel as disk cache. The values shown by top(1) labeled as Inact and Laundry are cached data at different aging levels. This cached data means the system does not have to access a slow disk again for data it has accessed recently, thus increasing overall performance. In general, a low value shown for Free memory in top(1) is good, provided it is not very low.
+
+16.3.
+
+Why will chmod not change the permissions on symlinks?
+
+Symlinks do not have permissions, and by default, chmod(1) will follow symlinks to change the permissions on the source file, if possible. For the file, foo with a symlink named bar, this command will always succeed.
+
+% chmod g-w bar
+However, the permissions on bar will not have changed.
+
+When changing modes of the file hierarchies rooted in the files instead of the files themselves, use either -H or -L together with -R to make this work. See chmod(1) and symlink(7) for more information.
+
+Warning: -R does a recursive chmod(1). Be careful about specifying directories or symlinks to directories to chmod(1). To change the permissions of a directory referenced by a symlink, use chmod(1) without any options and follow the symlink with a trailing slash (/). For example, if foo is a symlink to directory bar, to change the permissions of foo (actually bar), do something like:
+% chmod 555 foo/
+With the trailing slash, chmod(1) will follow the symlink, foo, to change the permissions of the directory, bar.
+
+16.4.
+
+Can I run DOS binaries under FreeBSD?
+
+Yes. A DOS emulation program, emulators/doscmd, is available in the FreeBSD Ports Collection.
+
+If doscmd will not suffice, emulators/pcemu emulates an 8088 and enough BIOS services to run many DOS text-mode applications. It requires the X Window System.
+
+The Ports Collection also has emulators/dosbox. The main focus of this application is emulating old DOS games using the local file system for files.
+
+16.5.
+
+What do I need to do to translate a FreeBSD document into my native language?
+
+See the Translation FAQ in the FreeBSD Documentation Project Primer.
+
+16.6.
+
+Why does my email to any address at FreeBSD.org bounce?
+
+The FreeBSD.org mail system implements some Postfix checks on incoming mail and rejects mail that is either from misconfigured relays or otherwise appears likely to be spam. Some of the specific requirements are:
+
+The IP address of the SMTP client must "reverse-resolve" to a forward confirmed hostname.
+
+The fully-qualified hostname given in the SMTP conversation (either HELO or EHLO) must resolve to the IP address of the client.
+
+Other advice to help mail reach its destination include:
+
+Mail should be sent in plain text, and messages sent to mailing lists should generally be no more than 200KB in length.
+
+Avoid excessive cross posting. Choose one mailing list which seems most relevant and send it there.
+
+If you still have trouble with email infrastructure at FreeBSD.org, send a note with the details to <postmaster@freebsd.org>; Include a date/time interval so that logs may be reviewed — and note that we only keep one week's worth of mail logs. (Be sure to specify the time zone or offset from UTC.)
+
+16.7.
+
+Where can I find a free FreeBSD account?
+
+While FreeBSD does not provide open access to any of their servers, others do provide open access UNIX® systems. The charge varies and limited services may be available.
+
+Arbornet, Inc, also known as M-Net, has been providing open access to UNIX® systems since 1983. Starting on an Altos running System III, the site switched to BSD/OS in 1991. In June of 2000, the site switched again to FreeBSD. M-Net can be accessed via telnet and SSH and provides basic access to the entire FreeBSD software suite. However, network access is limited to members and patrons who donate to the system, which is run as a non-profit organization. M-Net also provides an bulletin board system and interactive chat.
+
+16.8.
+
+What is the cute little red guy's name?
+
+He does not have one, and is just called “the BSD daemon”. If you insist upon using a name, call him “beastie”. Note that “beastie” is pronounced “BSD”.
+
+More about the BSD daemon is available on his home page.
+
+16.9.
+
+Can I use the BSD daemon image?
+
+Perhaps. The BSD daemon is copyrighted by Marshall Kirk McKusick. Check his Statement on the Use of the BSD Daemon Figure for detailed usage terms.
+
+In summary, the image can be used in a tasteful manner, for personal use, so long as appropriate credit is given. Before using the logo commercially, contact Kirk McKusick <mckusick@FreeBSD.org> for permission. More details are available on the BSD Daemon's home page.
+
+16.10.
+
+Do you have any BSD daemon images I could use?
+
+Xfig and eps drawings are available under /usr/share/examples/BSD_daemon/.
+
+16.11.
+
+I have seen an acronym or other term on the mailing lists and I do not understand what it means. Where should I look?
+
+Refer to the FreeBSD Glossary.
+
+16.12.
+
+Why should I care what color the bikeshed is?
+
+The really, really short answer is that you should not. The somewhat longer answer is that just because you are capable of building a bikeshed does not mean you should stop others from building one just because you do not like the color they plan to paint it. This is a metaphor indicating that you need not argue about every little feature just because you know enough to do so. Some people have commented that the amount of noise generated by a change is inversely proportional to the complexity of the change.
+
+The longer and more complete answer is that after a very long argument about whether sleep(1) should take fractional second arguments, Poul-Henning Kamp <phk@FreeBSD.org> posted a long message entitled “A bike shed (any color will do) on greener grass...”. The appropriate portions of that message are quoted below.
+
+ 	
+“What is it about this bike shed?” Some of you have asked me.
+
+It is a long story, or rather it is an old story, but it is quite short actually. C. Northcote Parkinson wrote a book in the early 1960s, called “Parkinson's Law”, which contains a lot of insight into the dynamics of management.
+
+[snip a bit of commentary on the book]
+
+In the specific example involving the bike shed, the other vital component is an atomic power-plant, I guess that illustrates the age of the book.
+
+Parkinson shows how you can go into the board of directors and get approval for building a multi-million or even billion dollar atomic power plant, but if you want to build a bike shed you will be tangled up in endless discussions.
+
+Parkinson explains that this is because an atomic plant is so vast, so expensive and so complicated that people cannot grasp it, and rather than try, they fall back on the assumption that somebody else checked all the details before it got this far. Richard P. Feynmann gives a couple of interesting, and very much to the point, examples relating to Los Alamos in his books.
+
+A bike shed on the other hand. Anyone can build one of those over a weekend, and still have time to watch the game on TV. So no matter how well prepared, no matter how reasonable you are with your proposal, somebody will seize the chance to show that he is doing his job, that he is paying attention, that he is here.
+
+In Denmark we call it “setting your fingerprint”. It is about personal pride and prestige, it is about being able to point somewhere and say “There! I did that.” It is a strong trait in politicians, but present in most people given the chance. Just think about footsteps in wet cement.
+
+ 
+ 	--Poul-Henning Kamp <phk@FreeBSD.org> on freebsd-hackers, October 2, 1999
