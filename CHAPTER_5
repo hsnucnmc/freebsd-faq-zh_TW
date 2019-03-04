@@ -1,4 +1,4 @@
-Chapter 5. Troubleshooting
+章節五:故障排除
 5.1. Why is FreeBSD finding the wrong amount of memory on i386™ hardware?
 5.2. Why do my programs occasionally die with Signal 11 errors?
 5.3. My system crashes with either Fatal trap 12: page fault in kernel mode, or panic:, and spits out a bunch of information. What should I do?
