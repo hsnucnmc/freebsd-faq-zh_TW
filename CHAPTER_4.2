@@ -2,18 +2,18 @@
 4.2.1. Does FreeBSD support architectures other than the x86?
 4.2.2. Does FreeBSD support Symmetric Multiprocessing (SMP)?
 4.2.3. What is microcode? How do I install Intel® CPU microcode updates?
+
 4.2.1.
 
 Does FreeBSD support architectures other than the x86?
-
-Yes. FreeBSD divides support into multiple tiers. Tier 1 architectures, such as i386 or amd64; are fully supported. Tiers 2 and 3 are supported on a best-effort basis. A full explanation of the tier system is available in the Committer's Guide.
-
-A complete list of supported architectures can be found on the platforms page.
-
+FreeBSD支援除了x86之外的系統結構嗎?
+Yes. FreeBSD divides support into multiple tiers. Tier 1 architectures, such as i386 or amd64; are fully supported. Tiers 2 and 3 are supported on a best-effort basis. 
+A full explanation of the tier system is available in the Committer's Guide. A complete list of supported architectures can be found on the platforms page.
+可，FreeBSD會分級支援。第一層完全支援，如i386、amd64。第二、三層會盡力支援，成敗不保證。關於層(tier)的系統在參與者指引有說明。而完整的結構支援表在論壇上已列出。
 4.2.2.
 
 Does FreeBSD support Symmetric Multiprocessing (SMP)?
-
+FreeBSD支援對稱多處理(SMP)嗎?
 FreeBSD supports symmetric multi-processor (SMP) on all non-embedded platforms (e.g, i386, amd64, etc.). SMP is also supported in arm and MIPS kernels, although some CPUs may not support this. FreeBSD's SMP implementation uses fine-grained locking, and performance scales nearly linearly with number of CPUs.
 
 smp(4) has more details.
