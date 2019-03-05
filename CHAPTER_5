@@ -1,15 +1,7 @@
 Chapter 5. Troubleshooting
-章節五:故障排除
-
 5.1. Why is FreeBSD finding the wrong amount of memory on i386™ hardware?
-5.1. 為什麼FreeBSD在i386™硬件上發現錯誤的內存量？
-
 5.2. Why do my programs occasionally die with Signal 11 errors?
-5.2. 為什麼我的程序偶爾會因Signal 11錯誤而死機？
-
 5.3. My system crashes with either Fatal trap 12: page fault in kernel mode, or panic:, and spo?its out a bunch of information. What should I d
-5.3. 我的系統因為Fatal trap 12: page fault in kernel mode, 或是 panic而崩潰，並吐出一堆信息。我該怎麼辦？
-
 5.4. What is the meaning of the error maxproc limit exceeded by uid %i, please see tuning(7) and login.conf(5)?
 5.5. Why do full screen applications on remote machines misbehave?
 5.6. Why does it take so long to connect to my computer via ssh or telnet?
@@ -19,6 +11,17 @@ Chapter 5. Troubleshooting
 5.10. What is a lock order reversal?
 5.11. What does Called ... with the following non-sleepable locks held mean?
 5.12. Why does buildworld/installworld die with the message touch: not found?
+
+章節五:故障排除
+5.1. 為什麼FreeBSD在i386™硬件上發現錯誤的內存量？
+5.2. 為什麼我的程序偶爾會因Signal 11錯誤而死機?
+5.3. 我的系統因為Fatal trap 12: page fault in kernel mode, 或是 panic而崩潰，並吐出一堆信息。我該怎麼辦？
+5.4. What is the meaning of the error maxproc limit exceeded by uid %i, please see tuning(7) and login.conf(5)是什麼意思?
+
+
+
+
+
 5.1.
 
 Why is FreeBSD finding the wrong amount of memory on i386™ hardware?
