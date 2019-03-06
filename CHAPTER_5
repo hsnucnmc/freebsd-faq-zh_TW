@@ -10,15 +10,21 @@ Chapter 5. Troubleshooting
 5.9. What does the error swap_pager: indefinite wait buffer: mean?
 5.10. What is a lock order reversal?
 5.11. What does Called ... with the following non-sleepable locks held mean?
-5.12. Why does buildworld/installworld die with the message touch: not found?
+5.12. Why does buildworld/installworld die with the message ?
 
 章節五:故障排除
 5.1. 為什麼FreeBSD在i386™硬件上發現錯誤的內存量？
 5.2. 為什麼我的程序偶爾會因Signal 11錯誤而死機?
 5.3. 我的系統因為Fatal trap 12: page fault in kernel mode, 或是 panic而崩潰，並吐出一堆信息。我該怎麼辦？
-5.4. What is the meaning of the error maxproc limit exceeded by uid %i, please see tuning(7) and login.conf(5)是什麼意思?
-
-
+5.4. uid %i 超出了maxproc限制錯誤, 請去看 tuning(7) 和 login.conf(5)是什麼意思?
+5.5. 為什麼終端機上的全屏應用程序出現問題？
+5.6. 為什麼通過通過 ssh或telnet連接到我的電腦需要花這麼長時間？
+5.7. 為什麼file: table 不斷的完整重複在 dmesg(8)裡?
+5.8. 為什麼我的電腦上的時鐘會一直顯示不正確的時間？
+5.9. 錯誤swap_pager: indefinite wait buffer:是什麼意思？
+5.10. 什麼是鎖定順序顛倒（lock order reversal）？
+5.11. 什麼叫做保持以下不會休眠的鎖    
+5.12. 為什麼編譯系統程式/安裝系統程式會故障並伴隨著訊息touch: not found？
 
 
 
@@ -37,6 +43,20 @@ Luckily, most hardware remaps the memory to a higher location so that it can sti
 On a 32-bit version of FreeBSD, the memory appears lost, since it will be remapped above 4 GB, which a 32-bit kernel is unable to access. In this case, the solution is to build a PAE enabled kernel. See the entry on memory limits for more information.
 
 On a 64-bit version of FreeBSD, or when running a PAE-enabled kernel, FreeBSD will correctly detect and remap the memory so it is usable. During boot, however, it may seem as if FreeBSD is detecting more memory than the system really has, due to the described remapping. This is normal and the available memory will be corrected as the boot process completes.
+
+
+
+
+5.1.
+
+為什麼FreeBSD在i386™硬件上發現錯誤的內存量？
+
+最有可能的原因是實際上的記憶體位置和虛擬記憶體位置之間的差異。
+
+
+
+
+
 
 5.2.
 
