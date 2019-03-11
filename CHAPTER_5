@@ -13,7 +13,7 @@ Chapter 5. Troubleshooting
 5.12. Why does buildworld/installworld die with the message ?
 
 章節五:故障排除
-5.1. 為什麼FreeBSD在i386™硬件上發現錯誤的內存量？
+5.1. 為什麼FreeBSD會在i386™硬件上發現錯誤的內存量？
 5.2. 為什麼我的程序偶爾會因Signal 11錯誤而死機?
 5.3. 我的系統因為Fatal trap 12: page fault in kernel mode, 或是 panic而崩潰，並吐出一堆信息。我該怎麼辦？
 5.4. uid %i 超出了maxproc限制錯誤, 請去看 tuning(7) 和 login.conf(5)是什麼意思?
@@ -49,9 +49,22 @@ On a 64-bit version of FreeBSD, or when running a PAE-enabled kernel, FreeBSD wi
 
 5.1.
 
-為什麼FreeBSD在i386™硬件上發現錯誤的內存量？
+為什麼FreeBSD會在i386™硬件上發現錯誤的內存量？
 
 最有可能的原因是實際上的記憶體位置和虛擬記憶體位置之間的差異。
+
+大多數PC硬件的慣例是使用3.5 GB和4 GB之間的記憶體區域用於特殊目的（通常用於PCI）。這些記憶體空間用於訪問PCI硬件。這導致這些空間無法訪問實際的物理記憶體
+
+應該出現在該位置的記憶體要怎麼調整取決於硬件。不幸的是，有一些硬件什麼都不做，導致剩下的500 MB RAM浪費了。
+
+幸運的是，大多數硬件會將內存重新映射到更高的位置，以便可以繼續使用它。但是，這可能會在觀看引導訊息時引起一些混淆。
+
+
+
+
+
+
+
 
 
 
