@@ -29,8 +29,9 @@ What is microcode? How do I install Intel® CPU microcode updates?
 何謂微指令(microcode)？我要如何安装Intel® CPU的微指令更新？
 
 Microcode is a method of programmatically implementing hardware level instructions. This allows for CPU bugs to be fixed without replacing the on board chip.
-微指令是一種計畫性執行的硬體階層結構。这可以让CPU的问题被修复儿不需要取代在主机板
-Install sysutils/devcpu-data, then add:
+微指令是一種計畫性執行的硬體階層結構。這可以讓CPU的問題被修復而不需要取代在主機板
 
+Install sysutils/devcpu-data, then add:
 microcode_update_enable="YES"
 to /etc/rc.conf
+安裝sysutils/devcpu-data，然後加上：microcode_update_enable="YES" 到/etc/rc.conf
