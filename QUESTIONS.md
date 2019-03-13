@@ -35,3 +35,7 @@ https://www.freebsd.org/doc/handbook/disks-encrypting.html
 > UEFI 是什麼？
 
 UEFI 算是比較新的 BIOS, 可以把它想成韌體 (Firmware) 的擴充
+
+> ARM, MIPS是啥？
+
+> sysutils, devcpu-data 是啥？
