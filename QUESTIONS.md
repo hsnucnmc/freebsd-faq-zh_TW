@@ -1,10 +1,33 @@
 # 把想問的問題集中在這邊吧！
-> i386™ , PCI, PAE 是什麼？
-
-(待補)
-
+> i386™ 是什麼？
 > 32bit 、64bit 是指位元，但是他的影響到底是什麼？
 
+把幾個問題集中在這邊一起回答
+
+以下為同義詞:
+32 bit = i386 = x86
+64 bit = amd64 = x86_64
+
+簡單來說, 32 or 64 bit 指的是 CPU 內的暫存器 (register) 大小
+可以想成 CPU 裡面有一格一格的暫存器 (記憶體空間), 每一格是 32 bits 大或者 64 bits 大這樣
+差別有很多, 像是 64 bit 通常跑的比 32 bit 快之類的
+不過最常拿來講的是支援的 RAM (記憶體) 大小
+32 bit => 2^32 bit = 4,294,967,295 bit, 大約在 4 GB 左右
+基本上如果你用 32 bit 版的 Windows (對, windows 也有分 32 bit 跟 64 bit 版)
+你的電腦最多可用的記憶體大概就在 4 GB (通常大概顯示 3.5 或 3.8 吧好像), 就算你插了 16 GB 在上面也一樣
+
+順帶一提, i386(Intel 386) 或者 amd64 雖然是廠牌名字沒錯 (Intel & AMD)
+不過是紀念性質 (第一個 32 bit 是 Intel 做的, 第一個 64 bit 是 AMD 做的這種感覺)
+不代表 Intel CPU 一定要用 i386 或者 AMD CPU 一定要用 amd64
+基本上都是通用的
+
+現在的 CPU 都是 64 bit 的, 所以大家就直接裝 amd64 版就好囉
+
+> ARM, MIPS是啥？
+(待補)
+(這題也跟 CPU 有關, 拉上來放一起)
+
+> PCI, PAE 是什麼？
 (待補)
 
 > beadm 是什麼？ bectl 是什麼？
@@ -36,6 +59,6 @@ https://www.freebsd.org/doc/handbook/disks-encrypting.html
 
 UEFI 算是比較新的 BIOS, 可以把它想成韌體 (Firmware) 的擴充
 
-> ARM, MIPS是啥？
-
 > sysutils, devcpu-data 是啥？
+(待補)
+
