@@ -3,19 +3,27 @@
 4.2.2. Does FreeBSD support Symmetric Multiprocessing (SMP)?
 4.2.3. What is microcode? How do I install Intel® CPU microcode updates?
 
+4.2. 架構與處理器
+4.2.1. FreeBSD 支援 x86 以外的系統架構嗎?
+4.2.2. FreeBSD 支援對稱多處理(SMP)嗎?
+4.2.3. 何謂微指令 (microcode)？ 我要如何安装 Intel® CPU 的微指令更新？
+
 4.2.1.
 
 Does FreeBSD support architectures other than the x86?
-FreeBSD支援除了x86之外的系統結構嗎?
+[v1] FreeBSD支援除了x86之外的系統結構嗎?
+[v2] FreeBSD 支援 x86 以外的系統架構嗎?
 
 Yes. FreeBSD divides support into multiple tiers. Tier 1 architectures, such as i386 or amd64; are fully supported. Tiers 2 and 3 are supported on a best-effort basis. 
 A full explanation of the tier system is available in the Committer's Guide. A complete list of supported architectures can be found on the platforms page.
-可，FreeBSD會分級支援。第一層完全支援，如i386、amd64。第二、三層會盡力支援，成敗不保證。關於層(tier)的系統在參與者指引有說明。而完整的結構支援表在論壇上已列出。
+[v1] 可，FreeBSD會分級支援。第一層完全支援，如i386、amd64。第二、三層會盡力支援，成敗不保證。關於層(tier)的系統在參與者指引有說明。而完整的結構支援表在論壇上已列出。
+[v2] 是的. FreeBSD 將支援分成多個層級. 第一級架構會完全支援, 如 i386 或 amd64. 第二、三級架構會盡最大努力支援。
+關於層級系統的完整說明可以在參與者指南中找到. 關於完整的支援架構列表可以在平台頁面上找到.
 
 4.2.2.
 
 Does FreeBSD support Symmetric Multiprocessing (SMP)?
-FreeBSD支援對稱多處理(SMP)嗎?
+FreeBSD 支援對稱多處理(SMP)嗎?
 
 FreeBSD supports symmetric multi-processor (SMP) on all non-embedded platforms (e.g, i386, amd64, etc.). SMP is also supported in arm and MIPS kernels, although some CPUs may not support this. FreeBSD's SMP implementation uses fine-grained locking, and performance scales nearly linearly with number of CPUs.
 FreeBSD在非嵌入式平台上支援SMP(例如i386, amd64等等)。SMP也支援ARM和MIPS的核心，即便有些CPU不支援。FreeBSD的SMP之執行會用到fine-grained locking,且其表現會和CPU數量成線性增長。
@@ -34,4 +42,4 @@ Microcode is a method of programmatically implementing hardware level instructio
 Install sysutils/devcpu-data, then add:
 microcode_update_enable="YES"
 to /etc/rc.conf
-安裝sysutils/devcpu-data，然後加上：microcode_update_enable="YES" 到/etc/rc.conf
+安裝 sysutils/devcpu-data， 然後加上： microcode_update_enable="YES" 到 /etc/rc.conf
