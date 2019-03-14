@@ -23,12 +23,31 @@
 
 現在的 CPU 都是 64 bit 的, 所以大家就直接裝 amd64 版就好囉
 
-> ARM, MIPS是啥？
-(待補)
-(這題也跟 CPU 有關, 拉上來放一起)
+> PAE 是什麼?
 
-> PCI, PAE 是什麼？
-(待補)
+PAE 指的是實體位址擴充
+前面提到 32 bit 記憶體位址只能用到 4 GB
+這個就是用來突破這件事情的
+
+PAE: https://en.wikipedia.org/wiki/Physical_Address_Extension
+
+> ARM, MIPS是啥？
+
+這些都是處理器內的指令集 (instruction set) 的名稱, 簡單說就是 CPU 內怎麼執行東西的
+主要分成兩種: CISC 跟 RISC
+CISC 的話最主要就是 x86 系列
+RISC 的話 ARM 跟 MIPS 都算是
+ARM 的話現在算是佔有率最高的, 幾乎所有手機都是 ARM 晶片
+MIPS 的話我想不到 XD 大型工作站吧
+
+剩下自己看 wiki 囉 XD
+ARM: https://en.wikipedia.org/wiki/ARM_architecture
+MIPS: https://en.wikipedia.org/wiki/MIPS_architecture
+
+> PCI 是什麼？
+
+PCI 是電腦裡面的匯流排, 你拆開電腦就會看到了, 長這樣
+PCI: https://en.wikipedia.org/wiki/Conventional_PCI
 
 > beadm 是什麼？ bectl 是什麼？
 
@@ -60,5 +79,8 @@ https://www.freebsd.org/doc/handbook/disks-encrypting.html
 UEFI 算是比較新的 BIOS, 可以把它想成韌體 (Firmware) 的擴充
 
 > sysutils, devcpu-data 是啥？
-(待補)
 
+sysutils 是 FreeBSD ports 裡面的一個分類, 主要放一些跟系統功能有關的 ports
+devcpu-data 就是裡面的一個 ports
+
+sysutils/devcpu-data: https://www.freshports.org/sysutils/devcpu-data/
