@@ -14,7 +14,7 @@ Chapter 5. Troubleshooting
 
 章節五:故障排除
 5.1. 為什麼FreeBSD會在i386™硬件上發現錯誤的內存量？
-5.2. 為什麼我的程序偶爾會因Signal 11錯誤而死機?
+5.2. 為什麼我的程序偶爾會因錯誤Signal 11而死機?
 5.3. 我的系統因為Fatal trap 12: page fault in kernel mode, 或是 panic而崩潰，並吐出一堆信息。我該怎麼辦？
 5.4. uid %i 超出了maxproc限制錯誤, 請去看 tuning(7) 和 login.conf(5)是什麼意思?
 5.5. 為什麼終端機上的全屏應用程序出現問題？
@@ -59,13 +59,9 @@ On a 64-bit version of FreeBSD, or when running a PAE-enabled kernel, FreeBSD wi
 
 幸運的是，大多數硬件會將內存重新映射到更高的位置，以便可以繼續使用它。但是，這可能會在觀看引導訊息時引起一些混淆。
 
+在32位版本的FreeBSD上，內存看起來好像丟失了，那是因為它將重新映射到4 GB以上，而32位元內核無法訪問。在這種情況下，解決方案是構建一個支持PAE的內核。有關更多信息，請參閱內存限制條目。
 
-
-
-
-
-
-
+在64位版本的FreeBSD上，或者在運行啟用PAE的內核時，FreeBSD將正確檢測並重新映射內存，使其可用。然而，在啟動期間，由於所描述的重映射，似乎FreeBSD檢測到的內存比系統實際擁有的內存更多。這是正常的，可用內存將在啟動過程完成時得到糾正。
 
 
 
@@ -109,11 +105,48 @@ Read the section on Signal 11 for a further explanation and a discussion on how 
 
 Finally, if none of this has helped, it is possibly a bug in FreeBSD. Follow these instructions to send a problem report.
 
+
+
+
+5.2.
+
+為什麼我的程序偶爾會因錯誤Signal 11而死機?
+
+當試圖訪問操作系統未授予其訪問權限的內存時，會導致錯誤Signal 11發生。如果這樣的錯誤好像隨機且間斷性的發生，那麼就開始調查原因
+
+這些問題通常會因為以下理由：
+
+1. 如果問題僅在特定的自定義應用程序中發生，則可能是程式中的錯誤。
+
+2. 如果它是FreeBSD基礎系統的一部分問題，它也可能是錯誤的代碼，但是通常在FAQ讀者使用這些代碼之前很久就找到並修復了這些問題（這就是-CURRENT存在的目的）。
+
+如果在編譯程序時出現問題，可能不是FreeBSD本身的錯誤，但編譯器執行的活動每次都會更改。
+
+例如:如果make buildworld在嘗試將ls.c編譯為ls.o時失敗，並且再次運行時，它又在同一個地方失敗，那證明這是一個失敗的build。請嘗試更新源代碼並重試。如果編譯在其他地方失敗，那幾乎可以肯定是由於硬件。
+
+在第一種情況下，使用除錯工具（如gdb（1））查找程序中試圖訪問虛假地址的部份並修復它。
+
+在第二種情況下，檢查哪個硬件有故障。
+
+其常見原因包括：
+
+
+
+
+
+
+
+
+
 5.3.
 
 My system crashes with either Fatal trap 12: page fault in kernel mode, or panic:, and spits out a bunch of information. What should I do?
 
 The FreeBSD developers are interested in these errors, but need more information than just the error message. Copy the full crash message. Then consult the FAQ section on kernel panics, build a debugging kernel, and get a backtrace. This might sound difficult, but does not require any programming skills. Just follow the instructions.
+
+
+
+
 
 5.4.
 
@@ -124,6 +157,10 @@ The FreeBSD kernel will only allow a certain number of processes to exist at one
 To adjust the kern.maxusers value, see the File/Process Limits section of the Handbook. While that section refers to open files, the same limits apply to processes.
 
 If the machine is lightly loaded but running a very large number of processes, adjust the kern.maxproc tunable by defining it in /boot/loader.conf. The tunable will not get adjusted until the system is rebooted. For more information about tuning tunables, see loader.conf(5). If these processes are being run by a single user, adjust kern.maxprocperuid to be one less than the new kern.maxproc value. It must be at least one less because one system program, init(8), must always be running.
+
+
+
+
 
 5.5.
 
@@ -136,6 +173,10 @@ Check the value of the TERM environment variable is xterm. If the remote machine
 Run stty -a to check what the kernel thinks the terminal dimensions are. If they are incorrect, they can be changed by running stty rows RR cols CC.
 
 Alternatively, if the client machine has x11/xterm installed, then running resize will query the terminal for the correct dimensions and set them.
+
+
+
+
 
 5.6.
 
@@ -153,11 +194,19 @@ If the problem is with the server on a local network, configure the server to re
 
 Following a fresh install of FreeBSD, it is also possible that domain and name server information is missing from /etc/resolv.conf. This will often cause a delay in SSH, as the option UseDNS is set to yes by default in /etc/ssh/sshd_config. If this is causing the problem, either fill in the missing information in /etc/resolv.conf or set UseDNS to no in sshd_config as a temporary workaround.
 
+
+
+
+
 5.7.
 
 Why does file: table is full show up repeatedly in dmesg(8)?
 
 This error message indicates that the number of available file descriptors have been exhausted on the system. Refer to the kern.maxfiles section of the Tuning Kernel Limits section of the Handbook for a discussion and solution.
+
+
+
+
 
 5.8.
 
@@ -190,11 +239,19 @@ The computer should now start keeping more accurate time.
 To have this change automatically run at boot time, add the following line to /etc/sysctl.conf:
 
 kern.timecounter.hardware=i8254
+
+
+
+
 5.9.
 
 What does the error swap_pager: indefinite wait buffer: mean?
 
 This means that a process is trying to page memory from disk, and the page attempt has hung trying to access the disk for more than 20 seconds. It might be caused by bad blocks on the disk drive, disk wiring, cables, or any other disk I/O-related hardware. If the drive itself is bad, disk errors will appear in /var/log/messages and in the output of dmesg. Otherwise, check the cables and connections.
+
+
+
+
 
 5.10.
 
@@ -207,6 +264,10 @@ A run-time lock diagnostic system called witness(4), enabled in FreeBSD-CURRENT 
 It is possible to get false positives, as witness(4) is conservative. A true positive report does not mean that a system is dead-locked; instead it should be understood as a warning that a deadlock could have happened here.
 
 Note: Problematic LORs tend to get fixed quickly, so check the FreeBSD-CURRENT mailing list before posting to it.
+
+
+
+
 5.11.
 
 What does Called ... with the following non-sleepable locks held mean?
@@ -221,7 +282,12 @@ In summary, such warnings are non-fatal, however with unfortunate timing they co
 
 For additional information about locking in FreeBSD see locking(9).
 
+
+
+
+
 5.12.
+
 
 Why does buildworld/installworld die with the message touch: not found?
 
