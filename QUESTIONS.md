@@ -87,4 +87,4 @@ sysutils/devcpu-data: https://www.freshports.org/sysutils/devcpu-data/
 
 
 
-fried system 、 following non-sleepable locks held 、 lock order reversal 、 remap是甚麼?
+fried system 、 following non-sleepable locks held 、 lock order reversal 、 remap 、 Dodgy memory是甚麼?
