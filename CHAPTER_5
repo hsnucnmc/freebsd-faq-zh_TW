@@ -53,15 +53,19 @@ On a 64-bit version of FreeBSD, or when running a PAE-enabled kernel, FreeBSD wi
 
 最有可能的原因是實際上的記憶體位置和虛擬記憶體位置之間的差異。
 
-大多數PC硬件的慣例是使用3.5 GB和4 GB之間的記憶體區域用於特殊目的（通常用於PCI）。這些記憶體空間用於訪問PCI硬件。這導致這些空間無法訪問實際的物理記憶體
+大多數PC硬件的慣例是使用3.5 GB和4 GB之間的記憶體區域用於特殊目的（通常用於PCI）。這些記憶體空間用於訪問PCI硬件。這導致這些空間無法訪問實際
 
-應該出現在該位置的記憶體要怎麼調整取決於硬件。不幸的是，有一些硬件什麼都不做，導致剩下的500 MB RAM浪費了。
+的物理記憶體，應該出現在該位置的記憶體要怎麼調整取決於硬件。不幸的是，有一些硬件什麼都不做，導致剩下的500 MB RAM浪費了。
 
 幸運的是，大多數硬件會將內存重新映射到更高的位置，以便可以繼續使用它。但是，這可能會在觀看引導訊息時引起一些混淆。
 
-在32位版本的FreeBSD上，內存看起來好像丟失了，那是因為它將重新映射到4 GB以上，而32位元內核無法訪問。在這種情況下，解決方案是構建一個支持PAE的內核。有關更多信息，請參閱內存限制條目。
+在32位版本的FreeBSD上，內存看起來好像丟失了，那是因為它將重新映射到4 GB以上，而32位元內核無法訪問。在這種情況下，解決方案是構建一個支持PAE的
 
-在64位版本的FreeBSD上，或者在運行啟用PAE的內核時，FreeBSD將正確檢測並重新映射內存，使其可用。然而，在啟動期間，由於所描述的重映射，似乎FreeBSD檢測到的內存比系統實際擁有的內存更多。這是正常的，可用內存將在啟動過程完成時得到糾正。
+內核。有關更多信息，請參閱內存限制條目。
+
+在64位版本的FreeBSD上，或者在運行啟用PAE的內核時，FreeBSD將正確檢測並重新映射內存，使其可用。然而，在啟動期間，由於所描述的重映射，似乎FreeBSD
+
+檢測到的內存比系統實際擁有的內存更多。這是正常的，可用內存將在啟動過程完成時得到糾正。
 
 
 
@@ -122,19 +126,37 @@ Finally, if none of this has helped, it is possibly a bug in FreeBSD. Follow the
 
 如果在編譯程序時出現問題，可能不是FreeBSD本身的錯誤，但編譯器執行的活動每次都會更改。
 
-例如:如果make buildworld在嘗試將ls.c編譯為ls.o時失敗，並且再次運行時，它又在同一個地方失敗，那證明這是一個失敗的build。請嘗試更新源代碼並重試。如果編譯在其他地方失敗，那幾乎可以肯定是由於硬件。
+例如:如果make buildworld在嘗試將ls.c編譯為ls.o時失敗，並且再次運行時，它又在同一個地方失敗，那證明這是一個失敗的build。請嘗試更新源代碼並重試。
 
-在第一種情況下，使用除錯工具（如gdb（1））查找程序中試圖訪問虛假地址的部份並修復它。
+如果編譯在其他地方失敗，那幾乎可以肯定是由於硬件的因素。在第一種情況下，使用除錯工具（如gdb（1））查找程序中試圖訪問虛假地址的部份並修復它。
 
 在第二種情況下，檢查哪個硬件有故障。
 
 其常見原因包括：
 
+1. 硬碟可能過熱：檢查風扇是否仍在工作，因為磁盤和其他硬件可能過熱了。
 
+2. 處理器運行過熱：這可能是因為處理器已被超頻，或者處理器上的風扇可能已經壞了。在任何一種情況下，請確保硬件以指定的運行方式運行(至少在嘗試處理這
+   
+   個問題時)。如果不是，請將其重新設置為默認設定。關於超頻，擁有一個慢速系統比一個需要更換的fried system要便宜得多！社區也不同情超頻系統的問題。
 
+3. Dodgy memory：如果安裝了多個內存SIMMS / DIMM，請將它們全部拉出並嘗試單獨使用每個SIMM或DIMM運行機器，以將問題縮小到單個有問題的DIMM / SIMM或
+   
+   組合。
 
+4. 過度樂觀的主機板設置：BIOS設置和一些motherboard jumpers，提供設置各種時序的選項。默認值通常已足夠，但有時將RAM上的等待狀態設置得太低，
 
+   或者設置“RAM Speed：Turbo”選項將導致奇怪的行為。推薦的做法是先註意當前設置後再設置BIOS為默認值。。
 
+5. 主板電源不干淨或不足。卸下所有未使用的I / O板，硬碟或CD-ROM，或斷開電源線，以查看電源是否可以管理較小的負載。或嘗試另一種電源，最好是
+
+   功率稍大的電源。例如，如果當前電源的額定功率為250瓦，請嘗試額定功率為300瓦的電源。
+
+閱讀有關Signal 11的部分，以獲得進一步的解釋，以及有關為甚麼故障內存仍能通過內存測試軟件或硬件的討論。在SIG11 有一個關於此的常見問題在
+
+the SIG11 problem FAQ.。
+
+最後，如果這些都沒有幫助，那麼可能是FreeBSD中的一個錯誤。按照these instructions發送問題報告。
 
 
 
@@ -145,6 +167,14 @@ My system crashes with either Fatal trap 12: page fault in kernel mode, or panic
 The FreeBSD developers are interested in these errors, but need more information than just the error message. Copy the full crash message. Then consult the FAQ section on kernel panics, build a debugging kernel, and get a backtrace. This might sound difficult, but does not require any programming skills. Just follow the instructions.
 
 
+
+5.3
+
+我的系統因為Fatal trap 12: page fault in kernel mode, 或是 panic而崩潰，並吐出一堆信息。我該怎麼辦？
+
+FreeBSD開發人員對這些錯誤感興趣，但需要的信息不僅僅是錯誤消息。請複製完整的崩潰消息。然後查閱關於 kernel panics的FAQ部分，構建測試內核，
+
+並獲得回溯紀錄。這可能聽起來很困難，但不需要任何編程技巧。只要按照說明操作。
 
 
 
@@ -159,6 +189,21 @@ To adjust the kern.maxusers value, see the File/Process Limits section of the Ha
 If the machine is lightly loaded but running a very large number of processes, adjust the kern.maxproc tunable by defining it in /boot/loader.conf. The tunable will not get adjusted until the system is rebooted. For more information about tuning tunables, see loader.conf(5). If these processes are being run by a single user, adjust kern.maxprocperuid to be one less than the new kern.maxproc value. It must be at least one less because one system program, init(8), must always be running.
 
 
+5.4. 
+
+uid %i 超出了maxproc限制錯誤, 請去看 tuning(7) 和 login.conf(5)是什麼意思?
+
+FreeBSD內核一次只允許存在一定數量的進程。該數字基於kern.maxusers sysctl（8）變量。 kern.maxusers還會影響其他各種內核限制，例如網絡緩衝區。
+
+如果機器負載很重，請增加kern.maxusers。除了最大進程數之外，這還將增加其他系統限制
+
+要調整kern.maxusers的值，請參閱“手冊”的“文件/進程限制”部分。雖然該部分涉及可存取的資料夾，但相同的限制適用於流程。
+
+如果機器負載很輕但運行了大量進程，通過在/boot/loader.conf中定義kern.maxproc為可調整來調整它。
+
+在重新啟動系統之前，電腦不會調整可調參數。有關調整可調參數的更多信息，請參閱loader.conf（5）。如果這些進程由單個用戶運行，請將kern.maxprocperuid
+
+調整為比新kern.maxproc值小1或以上。它必須至少少一，因為一個系統程序init（8）必須始終運行。
 
 
 
@@ -173,6 +218,14 @@ Check the value of the TERM environment variable is xterm. If the remote machine
 Run stty -a to check what the kernel thinks the terminal dimensions are. If they are incorrect, they can be changed by running stty rows RR cols CC.
 
 Alternatively, if the client machine has x11/xterm installed, then running resize will query the terminal for the correct dimensions and set them.
+
+
+5.5. 
+
+為什麼終端機上的全屏應用程序出現問題？
+
+
+
 
 
 
