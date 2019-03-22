@@ -84,3 +84,7 @@ sysutils 是 FreeBSD ports 裡面的一個分類, 主要放一些跟系統功能
 devcpu-data 就是裡面的一個 ports
 
 sysutils/devcpu-data: https://www.freshports.org/sysutils/devcpu-data/
+
+
+
+fried system 、 following non-sleepable locks held 、 lock order reversal是甚麼?
