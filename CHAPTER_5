@@ -224,10 +224,13 @@ Alternatively, if the client machine has x11/xterm installed, then running resiz
 
 為什麼終端機上的全屏應用程序出現問題？
 
+遠程機器可能被設置為FreeBSD控制台所需的xterm以外的終端類型。或者，內核可能具有錯誤的終端寬度和高度值。
 
+檢查TERM環境變量的值是xterm。如果遠程機器不支持嘗試vt100。
 
+運行stty -a來檢查內核認為終端尺寸是什麼。如果它們不正確，可以通過運行stty rows RR cols CC來更改它們。
 
-
+或者，如果客戶端計算機安裝了x11 / xterm，則運行resize將查詢終端以獲取正確的尺寸並進行設置。
 
 
 
@@ -248,7 +251,25 @@ If the problem is with the server on a local network, configure the server to re
 Following a fresh install of FreeBSD, it is also possible that domain and name server information is missing from /etc/resolv.conf. This will often cause a delay in SSH, as the option UseDNS is set to yes by default in /etc/ssh/sshd_config. If this is causing the problem, either fill in the missing information in /etc/resolv.conf or set UseDNS to no in sshd_config as a temporary workaround.
 
 
+5.6.
 
+為什麼通過通過 ssh或telnet連接到我的電腦需要花這麼長時間？
+
+症狀：建立TCP連接的時間與客戶端軟件要求輸入密碼的時間之間存在長時間延遲（或者，在telnet（1）的情況下，出現登錄提示時）。
+
+問題：更有可能的是，延遲是由服務器軟件試圖將客戶端的IP地址解析為主機名引起的。許多服務器（包括FreeBSD附帶的Telnet和SSH服務器）都會將主機名存儲在日誌文件中，以供管理員以後參考。
+
+補救措施：如果在將客戶端計算機連接到任何服務器時出現問題，則問題出在客戶端上。如果問題僅在有人連接到服務器計算機時發生，則問題出在服務器上。
+
+如果問題出在客戶端，唯一的補救措施是修復DNS，以便服務器可以解析它。如果這是在本地網絡上，請將其視為服務器問題並繼續閱讀。如果是在網路，請與您的ISP聯繫。
+
+如果問題出在本地網絡上的服務器上，請配置服務器使其可以解析本地地址範圍的地址成主機名。有關更多信息，請參閱hosts（5）和named（8）。
+
+如果問題出在網路上，則問題可能是本地服務器的解析程序無法正常運行。要檢查，請嘗試查找其他主機，例如www.yahoo.com。如果它不起作用，那就是問題所在。
+
+在第一次安裝FreeBSD之後，/ etc / resolv.conf中也可能缺少域名和服務器信息。這通常會導致SSH延遲，因為/ etc / ssh / sshd_config中的選項UseDNS默認設置
+
+為yes。如果這導致問題，請在/etc/resolv.conf中填寫缺少的信息，或者在sshd_config中將UseDNS設置為no作為臨時解決方法。
 
 
 5.7.
@@ -258,7 +279,11 @@ Why does file: table is full show up repeatedly in dmesg(8)?
 This error message indicates that the number of available file descriptors have been exhausted on the system. Refer to the kern.maxfiles section of the Tuning Kernel Limits section of the Handbook for a discussion and solution.
 
 
+5.7.
 
+為什麼file: table 不斷的完整重複在 dmesg(8)裡?
+
+此錯誤消息表示系統上已用盡可用文件描述符的數量。有關討論和解決方案，請參閱本手冊“調整內核限制”部分的kern.maxfiles部分。
 
 
 5.8.
