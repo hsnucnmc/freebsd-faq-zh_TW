@@ -319,16 +319,49 @@ To have this change automatically run at boot time, add the following line to /e
 kern.timecounter.hardware=i8254
 
 
+5.8. 為什麼我的電腦上的時鐘會一直顯示不正確的時間？
+
+計算機有兩個或更多時鐘，FreeBSD選擇使用錯誤的時鐘。
+
+運行dmesg（8），並檢查包含Timecounter的行。 具有FreeBSD選擇的最高質量價值的那個。
+# dmesg | grep Timecounter
+Timecounter "i8254" frequency 1193182 Hz quality 0
+Timecounter "ACPI-fast" frequency 3579545 Hz quality 1000
+Timecounter "TSC" frequency 2998570050 Hz quality 800
+Timecounters tick every 1.000 msec
+
+通過檢查kern.timecounter.hardware sysctl（3）來確認這一點。
+# sysctl kern.timecounter.hardware
+kern.timecounter.hardware: ACPI-fast
+
+它可能是一個損壞的ACPI計時器。 最簡單的解決方案是在/boot/loader.conf中禁用ACPI計時器：
+# sysctl kern.timecounter.hardware=i8254
+kern.timecounter.hardware: TSC -> i8254
+
+現在計算機應該開始保持更準確的時間。
+
+要在啟動時自動運行此更改，請將以下行添加到/etc/sysctl.conf：
+kern.timecounter.hardware=i8254
 
 
 5.9.
 
 What does the error swap_pager: indefinite wait buffer: mean?
 
-This means that a process is trying to page memory from disk, and the page attempt has hung trying to access the disk for more than 20 seconds. It might be caused by bad blocks on the disk drive, disk wiring, cables, or any other disk I/O-related hardware. If the drive itself is bad, disk errors will appear in /var/log/messages and in the output of dmesg. Otherwise, check the cables and connections.
+This means that a process is trying to page memory from disk, and the page attempt has hung trying to access the disk for more than 
+
+20 seconds. It might be caused by bad blocks on the disk drive, disk wiring, cables, or any other disk I/O-related hardware. If the
+
+drive itself is bad, disk errors will appear in /var/log/messages and in the output of dmesg. Otherwise, check the cables and
+
+connections.
 
 
+5.9. 錯誤swap_pager: indefinite wait buffer:是什麼意思？
 
+這意味著進程正在嘗試從磁盤中分頁內存，並且頁面嘗試已暫停嘗試訪問磁盤超過20秒。 它可能是由磁盤驅動器，磁盤線，電纜或任何其他磁盤I / O相關硬件上的
+
+壞塊引起的。 如果驅動器本身不好，磁盤錯誤將出現在/ var / log / messages和dmesg的輸出中。 否則，請檢查電纜和連接。
 
 
 5.10.
@@ -344,7 +377,21 @@ It is possible to get false positives, as witness(4) is conservative. A true pos
 Note: Problematic LORs tend to get fixed quickly, so check the FreeBSD-CURRENT mailing list before posting to it.
 
 
+5.10. 什麼是鎖定順序顛倒（lock order reversal）？
 
+FreeBSD內核使用許多資源鎖來仲裁某些資源的爭用。 當多個內核線程嘗試獲取多個資源鎖時，總是存在死鎖的可能性，其中兩個線程各自獲得彼此正在等待的鎖並永遠等
+
+待另一個線程釋放它。 如果所有線程以相同的順序獲得鎖，則可以避免這種鎖定問題。
+
+名為witness（4）的運行時鎖定診斷系統，在FreeBSD-CURRENT中啟用，默認情況下禁用穩定分支和釋放，檢測由於鎖定錯誤導致死鎖的可能性，包括因獲
+
+取具有不同順序的多個資源鎖而導致的錯誤 來自內核的不同部分。 見證（4）框架嘗試在發生時檢測到此問題，並通過向系統控制台打印有關鎖定順序反轉（
+
+通常也稱為LOR）的消息來報告它。
+
+由於證人（4）是保守的，因此可能會出現誤報。真正的積極報告並不意味著系統是死鎖的;相反，它應該被理解為警告，這裡可能發生死鎖。
+
+注意：有問題的LOR傾向於快速修復，因此請在發布之前檢查FreeBSD-CURRENT郵件列表。
 
 5.11.
 
@@ -361,6 +408,19 @@ In summary, such warnings are non-fatal, however with unfortunate timing they co
 For additional information about locking in FreeBSD see locking(9).
 
 
+5.11. 什麼叫做保持以下不會休眠的鎖    
+
+這意味著在保持互斥鎖（或其他不可記錄的）鎖定時調用可能睡眠的函數。
+
+這是一個錯誤的原因是因為互斥量不是長時間保留的;他們應該只是為了保持短時間的同步。此編程合同允許設備驅動程序在中斷期間使用互斥鎖與內核的其餘
+
+部分進行同步。中斷（在FreeBSD下）可能無法入睡。因此，在持有互斥鎖的情況下，內核中的子系統不會長時間阻塞是必要的。
+
+為了捕獲這樣的錯誤，可以在與持有互斥鎖時進行潛在阻塞調用時向內核添加斷言，該斷言與見證（4）子系統交互以發出警告或致命錯誤（取決於系統配置）。
+
+總之，這種警告是非致命的，但是由於不幸的時間點，它們可能會導致不良影響，從一瞬間對系統響應能力的影響到把整個系統鎖住。
+
+有關在FreeBSD中鎖定的其他信息，請參閱locking（9）。
 
 
 
@@ -369,4 +429,15 @@ For additional information about locking in FreeBSD see locking(9).
 
 Why does buildworld/installworld die with the message touch: not found?
 
-This error does not mean that the touch(1) utility is missing. The error is instead probably due to the dates of the files being set sometime in the future. If the CMOS clock is set to local time, run adjkerntz -i to adjust the kernel clock when booting into single-user mode.
+This error does not mean that the touch(1) utility is missing. The error is instead probably due to the dates of the files being set
+
+sometime in the future. If the CMOS clock is set to local time, run adjkerntz -i to adjust the kernel clock when booting into 
+
+single-user mode.
+
+5.12. 為什麼編譯系統程式/安裝系統程式會故障並伴隨著訊息touch: not found？
+
+此錯誤並不意味著缺少touch（1）實用程序。 相反，錯誤可能是由於將來某個時間設置文件的日期。 如果CMOS時鐘設置為本地時間，則在引導進入單用戶模式時
+
+運行adjkerntz -i以調整內核時鐘。
+
